@@ -7,7 +7,7 @@ function Game(gameMode, aiLevel, first, vsai){
   this.player2AI = vsai;
 
   if(vsai){ // If there is an ai player, create the object
-    this.ai = new AI(aiLevel, gameMode);
+    this.ai = new AI(aiLevel, gameMode, 2);
   }
 
   //Makes sure methods are not declared multiply times.
@@ -104,6 +104,8 @@ function Game(gameMode, aiLevel, first, vsai){
      * Sets the piece of the board for the player
      */
     Game.prototype.setPieceToPlayer = function(outerX, outerY, innerX, innerY){
+      //DEBUG
+      console.log(innerX, innerY);
       if(this.gameMode == 1){
         //Check for valid move
         if(this.board[innerX][innerY] != 0){
@@ -112,9 +114,9 @@ function Game(gameMode, aiLevel, first, vsai){
         }
 
         this.board[innerX][innerY] = this.currentPlayer;
-        console.log(this.board);
 
         if(this.gameOver()){ //Check if game is over
+          console.log(this.board);
           console.log("Game over. Player " + this.currentPlayer + " wins!");
           return;
         }
@@ -124,12 +126,11 @@ function Game(gameMode, aiLevel, first, vsai){
 
         //If the next player is an AI, then get their move
         if((this.currentPlayer == 1 && this.player1AI) || (this.currentPlayer == 2 && this.player2AI)){
-          var move = ai.getMove(this.board, this.currentPlayer, null);
+          var move = this.ai.getMove(this.board, this.currentPlayer, null);
           this.setPieceToPlayer(0, 0, move.innerX, move.innerY);
         }
-
       }else if(this.gameMode == 2){
-        if(board[outerX][outerY][innerX][innerY] != 0){ // Check for valid move
+        if(this.board[outerX][outerY][innerX][innerY] != 0){ // Check for valid move
           console.log("invalid move!");
           return;
         }
@@ -146,7 +147,7 @@ function Game(gameMode, aiLevel, first, vsai){
 
         //If the next player is AI, then get their move, else set up next player's move.
         if((this.currentPlayer == 1 && this.player1AI) || (this.currentPlayer == 2 && this.player2AI)){
-          var move = ai.getMove(this.board, this.currentPlayer, null);
+          var move = this.ai.getMove(this.board, this.currentPlayer, null);
           this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY);
         }else{ 
           //Set up next player's move
@@ -156,6 +157,10 @@ function Game(gameMode, aiLevel, first, vsai){
     };
 
     Game.prototype.gameOver = function(){
+      //Check for tie
+      if(this.gameTied()){
+        return true;
+      }
       if(this.gameMode == 1){ // Normal mode
         if(this.board[0][0] != 0){
           if(this.board[0][0] == this.board[0][1] && this.board[0][0] == this.board[0][2]){ // Left col
@@ -195,6 +200,12 @@ function Game(gameMode, aiLevel, first, vsai){
           return true;
         }
 
+        //Check for ties
+        for(var i = 0; i < 3; i++){
+          for(var j = 0; j < 3; j++){
+          }
+        }
+
         return false;
       }else if(this.gameMode == 2){ // Ultimate mode
 
@@ -202,11 +213,40 @@ function Game(gameMode, aiLevel, first, vsai){
 
         return false;
       }
-    }
+    };
+
+    /*
+     * Checks for ties by looking for any piece that isn't claimed
+     */
+    Game.prototype.gameTied = function(){
+      if(this.gameMode == 1){
+        for(var i = 0; i < 3; i++){
+          for(var j = 0; j < 3; j++){
+            if(this.board[i][j] == 0){
+              return false;
+            }
+          }
+       }
+       return true;
+      }else if(this.gameMode == 2){
+        for(var i = 0; i < 3; i++){
+          for(var j = 0; j < 3; j++){
+            for(var k = 0; k < 3; k++){
+              for(var l = 0; l < 3; l++){
+                if(this.board[i][j][k][l] == 0){
+                  return false;
+                }
+              }
+            }
+          }
+        }
+
+        return true;
+      }
+    };
 
     Game.prototype.endScene = function(){
-
-    }
+    };
 
   }
 
