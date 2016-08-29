@@ -3,9 +3,11 @@ function Game(gameMode, aiLevel, first, vsai){
   this.currentPlayer = first; // Human is player 1, AI/Human is player 2
   this.playingAI = vsai;
   this.numOfMoves = 0;
+  this.player1AI = false;
+  this.player2AI = vsai;
 
   if(vsai){ // If there is an ai player, create the object
-    this.ai = new AI(aiLevel);
+    this.ai = new AI(aiLevel, gameMode);
   }
 
   //Makes sure methods are not declared multiply times.
@@ -102,69 +104,53 @@ function Game(gameMode, aiLevel, first, vsai){
      * Sets the piece of the board for the player
      */
     Game.prototype.setPieceToPlayer = function(outerX, outerY, innerX, innerY){
-      if(this.currentPlayer == 1){ //Human player(Call AI methods);
-        if(this.gameMode == 1){ // Normal mode
-          if(this.board[innerX][innerY] != 0){
-            console.log("Invalid move");
-            return;
-          }
-          this.currentPlayer = 2;
-          this.numOfMoves++;
-          this.board[innerX][innerY] = this.currentPlayer;
-          
-          if(this.gameOver()){ // 
-            console.log("Game over. Player " + this.currentPlayer + " wins!");
-          }else if(this.playingAI){ //Calulate AI's move
-            console.log(this.board);
-            var move = this.ai.getMove(this.board, this.currentPlayer, this.gameMode);
-          }
-        }else if(this.gameMode == 2){
-          if(this.board[outerX][outerY][innerX][innerY] != 0){
-            console.log("Invalid move");
-            return;
-          }
-          this.currentPlayer = 2;
-          this.numOfMoves++;
-          this.board[outerX][outerY][innerX][innerY] = this.currentPlayer;
-          
-          if(this.gameOver()){ // 
-            console.log("Game over. Player " + this.currentPlayer + " wins!");
-          }else if(this.playingAI){ // Get AI's next move
-            this.setPieceToPlayer();
-
-          }else{
-            //Set up for next player's turn
-          }
+      if(this.gameMode == 1){
+        //Check for valid move
+        if(this.board[innerX][innerY] != 0){
+          console.log("Invalid move.");
+          return;
         }
-      }else if(this.currentPlayer == 2){ //AI/Human player (Don't call AI methods)
-        if(gameMode == 1){
-          if(this.board[innerX][innerY] != 0){
-            console.log("Invalid move");
-            return;
-          }
-          this.currentPlayer = 1;
-          this.numOfMoves++;
-          this.board[innerX][innerY] = this.currentPlayer;
-          
-          if(gameOver){
-            console.log("Game over." + this.currentPlayer + " wins!");
-          }
-        }else if(gameMode == 2){
-          if(this.board[outerX][outerY][innerX][innerY] != 0){
-            console.log("Invalid move");
-            return;
-          }
-          this.currentPlayer = 1;
-          this.numOfMoves++;
-          this.board[outerX][outerY][innerX][innerY] = this.currentPlayer;
 
-          //Set up next player's turn
-          if(gameOver){
-            console.log("Game over." + this.currentPlayer + " wins!");
-          }else{
-            //Set up borad for next player
+        this.board[innerX][innerY] = this.currentPlayer;
+        console.log(this.board);
 
-          }
+        if(this.gameOver()){ //Check if game is over
+          console.log("Game over. Player " + this.currentPlayer + " wins!");
+          return;
+        }
+
+        this.currentPlayer = (this.currentPlayer%2) + 1;
+        this.numOfMoves++;
+
+        //If the next player is an AI, then get their move
+        if((this.currentPlayer == 1 && this.player1AI) || (this.currentPlayer == 2 && this.player2AI)){
+          var move = ai.getMove(this.board, this.currentPlayer, null);
+          this.setPieceToPlayer(0, 0, move.innerX, move.innerY);
+        }
+
+      }else if(this.gameMode == 2){
+        if(board[outerX][outerY][innerX][innerY] != 0){ // Check for valid move
+          console.log("invalid move!");
+          return;
+        }
+
+        this.board[outerX][outerY][innerX][innerY] = this.currentPlayer;
+
+        if(this.gameOver()){ // Check if game is over
+          console.log("Game Over. Player "+ this.currentPlayer + " wins!");
+          return;
+        }
+
+        this.currentPlayer = (this.currentPlayer % 2) + 1;
+        this.numOfMoves++;
+
+        //If the next player is AI, then get their move, else set up next player's move.
+        if((this.currentPlayer == 1 && this.player1AI) || (this.currentPlayer == 2 && this.player2AI)){
+          var move = ai.getMove(this.board, this.currentPlayer, null);
+          this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY);
+        }else{ 
+          //Set up next player's move
+
         }
       }
     };
