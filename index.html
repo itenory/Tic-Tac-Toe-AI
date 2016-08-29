@@ -1,0 +1,92 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Tic Tac Toe</title>
+    <script src="Game.js"></script>
+    <script src="AI.js"></script>
+    <script>
+      function setUpGame(){
+        //Get inputs
+        var mode = document.getElementsByName("difficulty");
+        var diff = document.getElementsByName("mode");
+        var first = document.getElementsByName("first");
+        var vsai = document.getElementsByName("vsai");
+
+        for(var i = 0; i < 2; i++){
+          if(first[i].checked){
+            first = parseInt(first[i].value);
+            break;
+          }
+        }
+        for(var i = 0; i < 3; i++){
+          if(diff[i].checked){
+            diff = parseInt(diff[i].value);
+            break;
+          }
+        }
+        for(var i = 0; i < 2; i++){
+          if(mode[i].checked){
+            mode = parseInt(mode[i].value);
+            break;
+          }
+        }
+        for(var i = 0; i < 2; i++){
+          if(vsai[i].checked){
+            vsai = Boolean(vsai[i].value);
+            break;
+          }
+        }
+
+        //Create game object
+        var game = new Game(mode, diff, first, vsai);
+
+        //Start game loop
+        console.log(game);
+        game.startGame();
+        console.log(game);
+      }
+    </script>
+
+    <link rel="stylesheet" href="default.css" media="screen" title="no title" charset="utf-8">
+  </head>
+
+  <body>
+
+    <div id="menu">
+      <p>Menu</p>
+      <div class="group">
+        <span>What difficulty?</span>
+        <input type="radio" name="difficulty" value="1" checked />Easy
+        <input type="radio" name="difficulty" value="2"/> Normal
+        <input type="radio" name="difficulty" value="3"/> Hard
+      </div>
+      <div class="group">
+        <span>Game Mode</span>
+        <input type="radio" name="mode" value="1" checked/> Normal
+        <input type="radio" name="mode" value="2"/> Ultimate
+      </div>
+      <div class="group">
+        <span>Who goes first? </span>
+        <input type="radio" name="first" value="1" checked/>Player 1
+        <input type="radio" name="first" value="2" />Player 2 (AI or second human player)
+      </div>
+      <div class="group">
+        <span>Who is player 2?</span>
+        <input type="radio" name="vsai" value="true" checked/>AI
+        <input type="radio" name="vsai" value=""/>Human player 2
+      </div>
+
+      <button onclick="setUpGame()">Start Game</button>
+    </div>
+
+    <div id="game">
+      <canvas id="gameboard" height="600" width="600">
+
+      </canvas>
+      <p>
+        Bottom
+      </p>
+    </div>
+
+  </body>
+</html>
