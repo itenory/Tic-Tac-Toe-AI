@@ -28,6 +28,9 @@ function Game(gameMode, aiLevel, first, vsai){
       this.drawBoard();
     };
 
+    /*
+     * Sets up the backend for the board depending on the game mode
+     */
     Game.prototype.setbackEnd = function(){
       if(this.gameMode == 1){
         console.log("Setting up for Normal Mode.");
@@ -39,14 +42,24 @@ function Game(gameMode, aiLevel, first, vsai){
         ];
       }else if(this.gameMode == 2){
         console.log("Setting up for Ultimate Mode.");
-
         this.board =
         [
-
-        ];
+          [ [[0, 0, 0], [0, 0, 0], [0, 0, 0]], // 0
+            [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+            [[0, 0, 0], [0, 0, 0], [0, 0, 0]]],
+          [ [[0, 0, 0], [0, 0, 0], [0, 0, 0]], // 1
+            [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+            [[0, 0, 0], [0, 0, 0], [0, 0, 0]]],
+          [ [[0, 0, 0], [0, 0, 0], [0, 0, 0]], // 2
+            [[0 ,0, 0], [0, 0, 0], [0, 0, 0]],
+            [[0, 0, 0], [0, 0, 0], [0, 0, 0]]]
+          ];
       }
     };
 
+    /*
+     * Sets mouse events for the current game mode
+     */
     Game.prototype.setMouse = function(){
       var canvas = document.getElementById("gameboard");
       var xPos = canvas.offsetLeft - canvas.scrollLeft + canvas.clientLeft;
@@ -70,35 +83,197 @@ function Game(gameMode, aiLevel, first, vsai){
 
           game.setPieceToPlayer(0, 0, iX, iY);
         }else if(game.gameMode == 2){
-          var oX = (xPos%200);
-          var oY = (xPos%200);
-          var iX ;
-          var iY ; 
+          var oX = parseInt(xPos/200);
+          var oY = parseInt(yPos/200);
+          var iX = parseInt(xPos/66.6) % 3;
+          var iY = parseInt(yPos/66.6) % 3;
+
+          console.log(oX, oY, iX, iY);
           game.setPieceToPlayer(oX, oY, iX, iY);
         }
         // console.log(event.pageX - xPos);
         // console.log(event.pageY - yPos);
       };
 
-      canvas.addEventListener("mousedown", 
+      canvas.addEventListener("mousedown",
         function(game){
           return function (){mouseDown(game, event);}
-        }(this)
-        , false);
-    }
+        }(this),
+        false);
+    };
 
+    /*
+     *
+     */
     Game.prototype.drawBoard = function(){
       console.log("Drawing board");
+      var vertexShaderText =
+      [
+        'precision mediump float;',
+        '',
+        'attribute vec2 vertPosition;',
+        'attribute vec3 vertColor;',
+        'varying vec3 fragColor;',
+        '',
+        'void main()',
+        '{',
+        ' fragColor = vertColor;',
+        ' gl_Position = vec4(vertPosition, 0.0, 1.0);',
+        '}'
+      ].join('\n');
+      var fragmentShaderText =
+      [
+        'precision mediump float;',
+        '',
+        'varying vec3 fragColor;',
+        'void main()',
+        '{',
+        ' gl_FragColor = vec4(fragColor, 1.0);',
+        '}'
+      ].join('\n');
 
       //Try first with webgl, if it doesn't work than use svgs
       var canvas = document.getElementById("gameboard");
+      var gl = canvas.getContext("experimental-webgl");
+
+      if(!gl){
+        alert("ERROR This browser does not support WebGL, using an altinate method.");
+        drawBoardAlt();
+        return;
+      }
+
+      //Clear 
+      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      //Compile shader
+      var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+      var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+      
+      gl.shaderSource(vertexShader, vertexShaderText);
+      gl.shaderSource(fragmentShader, fragmentShaderText);
+      
+      gl.compileShader(vertexShader);
+      gl.compileShader(fragmentShader);
+
+      //Create Program
+      var program = gl.createProgram();
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+  
+
+      //Function for getting vertices for squares
+      var verticesSquare = function (topLeftX, topLeftY, length, r, g, b, buffer){
+        var vertices = [];
+        
+        vertices.push(topLeftX + buffer, topLeftY - buffer, r, g, b); // Top left
+        vertices.push(topLeftX + buffer, (topLeftY - length) + buffer, r, g, b); // Bottom left
+        vertices.push(topLeftX + (length - buffer), (topLeftY - length) + buffer, r,g,b); // Bottom Right
+        
+        vertices.push(topLeftX + buffer, topLeftY - buffer, r, g, b); // Top left
+        vertices.push(topLeftX + (length - buffer), (topLeftY - length) + buffer, r,g,b); // Bottom Right
+        vertices.push( topLeftX + (length - buffer), topLeftY - buffer, r,g,b); // Top Right
+        
+        return vertices;
+      }
+
+
+      //Creating vertices for triangles
+      var boardVertices = [];
+      var numOfSquares;
+      if(this.gameMode == 1){
+        for(var j = 0; j < 3; j++){
+          for(var i = 0; i < 3; i++){
+            if(this.board[i][j] == 0){
+              var square = verticesSquare(-1 + (i*2/3),1 - (j*2/3) , 2/3, .5, .5, .5, .05);
+              for(var k = 0; k < square.length; k++){
+                boardVertices.push(square[k]);
+              } 
+            }else if(this.board[i][j] == 1){ // Red 
+              var square = verticesSquare(-1 + (i*2/3),1 - (j*2/3) , 2/3, 1, 0, 0, .1);
+              for(var k = 0; k < square.length; k++){
+                boardVertices.push(square[k]);
+              } 
+            }else{ // Blue
+              var square = verticesSquare(-1 + (i*2/3),1 - (j*2/3) , 2/3, 0, 1, 0, .1);
+              for(var k = 0; k < square.length; k++){
+                boardVertices.push(square[k]);
+              } 
+            }
+          }
+        }
+        numOfSquares = 9;
+      }else if(this.gameMode == 2){
+        console.log("here");
+        for(var i = 0; i < 3; i++){
+          for(var j = 0; j < 3; j++){
+            for(var k = 0; k < 3; k++){
+              for(var l = 0; l < 3; l++){
+                if(this.board[i][j][k][l] == 0){ // Default
+                  var square = verticesSquare(-1 + (l * 2/9) + (j*2/3),1 - (k*2/9) -(i*2/3) , 2/9, .5, .5, .5, .05);
+                  for(var m = 0; m < square.length; m++){
+                    boardVertices.push(square[m]);
+                  } 
+                }else if(this.board[i][j][k][l] == 1){// Player 1 (Red)
+                  var square = verticesSquare(-1 + (l * 2/9) + (j*2/3),1 - (k*2/9) -(i*2/3) , 2/9, 1, 0, 0, .05);
+                  for(var m = 0; m < square.length; m++){
+                    boardVertices.push(square[m]);
+                  } 
+                }else{ // Player 2 (Blue)
+                  var square = verticesSquare(-1 + (l * 2/9) + (j*2/3),1 - (k*2/9) -(i*2/3) , 2/9, 0, 0, 1, .05);
+                  for(var m = 0; m < square.length; m++){
+                    boardVertices.push(square[m]);
+                  } 
+                }
+              }
+            }
+          }
+        }
+        numOfSquares = 81;
+      }
+     
+      //Creating buffers
+      var boardVertexBufferObject = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, boardVertexBufferObject);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(boardVertices), gl.STATIC_DRAW);
+      
+      
+      var positionAttribLocation = gl.getAttribLocation(program, "vertPosition");
+      var colorAttribLocation = gl.getAttribLocation(program, "vertColor");
+      
+      gl.vertexAttribPointer(
+        positionAttribLocation,
+        2, // Number of elements per attribute;
+        gl.FLOAT,
+        gl.FALSE,
+        5 * Float32Array.BYTES_PER_ELEMENT,
+        0
+      );
+      
+      
+      gl.vertexAttribPointer(
+        colorAttribLocation,
+        3,
+        gl.FLOAT,
+        gl.FALSE,
+        5 * Float32Array.BYTES_PER_ELEMENT,
+        2 * Float32Array.BYTES_PER_ELEMENT
+      );
+      
+      gl.enableVertexAttribArray(positionAttribLocation);
+      gl.enableVertexAttribArray(colorAttribLocation);
+      
+      //Start
+      gl.useProgram(program);
+      gl.drawArrays(gl.TRIANGLES, 0, 3*(2*numOfSquares));
     };
 
     /*
      * Draws board using svg rather than webgl
      */
     Game.prototype.drawBoardAlt = function(){
-    }
+    };
 
     /*
      * Sets the piece of the board for the player
@@ -116,8 +291,10 @@ function Game(gameMode, aiLevel, first, vsai){
         this.board[innerX][innerY] = this.currentPlayer;
 
         if(this.gameOver()){ //Check if game is over
+          this.drawBoard();
           console.log(this.board);
           console.log("Game over. Player " + this.currentPlayer + " wins!");
+          this.endScene();
           return;
         }
 
@@ -126,8 +303,10 @@ function Game(gameMode, aiLevel, first, vsai){
 
         //If the next player is an AI, then get their move
         if((this.currentPlayer == 1 && this.player1AI) || (this.currentPlayer == 2 && this.player2AI)){
-          var move = this.ai.getMove(this.board, this.currentPlayer, null);
+          var move = this.ai.getMove(this.board, null);
           this.setPieceToPlayer(0, 0, move.innerX, move.innerY);
+        }else{
+          this.drawBoard();
         }
       }else if(this.gameMode == 2){
         if(this.board[outerX][outerY][innerX][innerY] != 0){ // Check for valid move
@@ -136,22 +315,27 @@ function Game(gameMode, aiLevel, first, vsai){
         }
 
         this.board[outerX][outerY][innerX][innerY] = this.currentPlayer;
-
+        console.log("Move made " + this.board[outerX][outerY][innerX][innerY]);
+        console.log(outerX + "" + outerY);
+        console.log(innerX + "" + innerY);
+;
         if(this.gameOver()){ // Check if game is over
           console.log("Game Over. Player "+ this.currentPlayer + " wins!");
           return;
         }
 
         this.currentPlayer = (this.currentPlayer % 2) + 1;
+        console.log(this.currentPlayer);
         this.numOfMoves++;
 
         //If the next player is AI, then get their move, else set up next player's move.
-        if((this.currentPlayer == 1 && this.player1AI) || (this.currentPlayer == 2 && this.player2AI)){
-          var move = this.ai.getMove(this.board, this.currentPlayer, null);
-          this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY);
-        }else{ 
+        if((this.currentPlayer == 1 && this.player1AI) || !(this.currentPlayer == 2 && this.player2AI)){
+          // var move = this.ai.getMove(this.board, {outerX: outerX, outerY: outerY, innerX: innerX, innerY: innerY});
+          // this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY);
+        }else{
           //Set up next player's move
-
+          this.drawBoard();
+          console.log(this.board);
         }
       }
     };
@@ -196,7 +380,7 @@ function Game(gameMode, aiLevel, first, vsai){
           }
         }
 
-        if(this.board[0][1] != 0 && this.board[0][1] == this.board[1][1] && this.board[0][1] == this.board[1][2]){ // Middle row
+        if(this.board[0][1] != 0 && this.board[0][1] == this.board[1][1] && this.board[0][1] == this.board[2][1]){ // Middle row
           return true;
         }
 
@@ -208,8 +392,6 @@ function Game(gameMode, aiLevel, first, vsai){
 
         return false;
       }else if(this.gameMode == 2){ // Ultimate mode
-
-
 
         return false;
       }
