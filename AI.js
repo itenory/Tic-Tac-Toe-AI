@@ -9,6 +9,7 @@ var AI = function(level, mode, player){
 
     AI.prototype.getMove = function(currentBoard, lastMove){
       this.possibleBoard = currentBoard;
+      console.log(lastMove);
 
       if(this.aiLevel == 1){
         this.depthBound = 2;
@@ -68,7 +69,7 @@ var AI = function(level, mode, player){
         }
       }else{ // Min Opponent's move
         bestScore = 100000;
-    
+
         for(var j = 0; j < possibleMoves.length; j++){
           this.setMove(possibleMoves[j], player);
 
@@ -91,7 +92,7 @@ var AI = function(level, mode, player){
 
     /*
      * Min max search with aplha beta pruning.
-     * player The current player whos' moves are to be evaluated. 
+     * player The current player whos' moves are to be evaluated.
      * depth The depth of the search tree. (Initially 0).
      * lastMove The last move made on the board
      * a Aplha
@@ -109,24 +110,24 @@ var AI = function(level, mode, player){
       if(this.gameMode == 1){
         this.possibleBoard[move.innerX][move.innerY] = player;
       }else if(this.gameMode == 2){
-        this.possibleBoard[move.outerX][move.outerY][move.innerX][move.innerY] = player; 
+        this.possibleBoard[move.outerX][move.outerY][move.innerX][move.innerY] = player;
       }
     };
 
     /*
      * Gets all possible moves for either game mode.
      *  Ultimate mode uses last move to determind where the player can go.
-     * lastMove The last move made on the board. 
+     * lastMove The last move made on the board.
      */
     AI.prototype.getPossibleMoves = function(lastMove){
       //Check if game is over
       if(this.gameWonBy(1) || this.gameWonBy(2)){
         return [];
-      } 
+      }
 
       var moves = [];
 
-      if(this.gameMode == 1){ // Normal mode 
+      if(this.gameMode == 1){ // Normal mode
         for(var i = 0; i < 3; i++){
           for(var j = 0; j < 3; j++){
             if(this.possibleBoard[i][j] == 0){
@@ -162,7 +163,7 @@ var AI = function(level, mode, player){
       return moves;
     };
 
-    /* ! Use for ultimate mode only ! 
+    /* ! Use for ultimate mode only !
      * Checks if a inner board is won
      */
     AI.prototype.singleWon = function(outerX, outerY){
@@ -177,6 +178,7 @@ var AI = function(level, mode, player){
 
           if(this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][1][0] && this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][2][0]){ // Top row
             return true;
+          }
       }
 
       if(this.possibleBoard[outerX][outerY][2][0] != 0){
@@ -196,6 +198,7 @@ var AI = function(level, mode, player){
 
         if(this.possibleBoard[outerX][outerY][1][2] == this.possibleBoard[outerX][outerY][0][2] && this.possibleBoard[outerX][outerY][1][2] == this.possibleBoard[outerX][outerY][2][2]){ // Bottom row
           return true;
+        }
       }
 
       if(this.possibleBoard[outerX][outerY][0][1] != 0 && this.possibleBoard[outerX][outerY][0][1] == this.possibleBoard[outerX][outerY][1][1] && this.possibleBoard[outerX][outerY][0][1] == this.possibleBoard[outerX][outerY][1][2]){ // Middle row
@@ -216,7 +219,10 @@ var AI = function(level, mode, player){
           return 10;
         }
       }else if(this.gameMode == 2){ // Ultimate mode
+        var score = 0;
 
+
+        return score;
       }
     };
 
@@ -266,8 +272,9 @@ var AI = function(level, mode, player){
         return false;
       }else if(this.gameMode == 2){
 
+        return false;
       }
-    }
+    };
 
   }
 };
