@@ -5,9 +5,13 @@ function Game(gameMode, aiLevel, first, vsai){
   this.numOfMoves = 0;
   this.player1AI = false;
   this.player2AI = vsai;
+  this.gameDone = false;
 
   if(vsai){ // If there is an ai player, create the object
     this.ai = new AI(aiLevel, gameMode, 2);
+  }
+  if(gameMode == 2){ // Use for ultimate mode to keep track single board wins
+    this.boardsWon = [0,0,0,0,0,0,0,0,0]; 
   }
 
   //Makes sure methods are not declared multiply times.
@@ -67,9 +71,11 @@ function Game(gameMode, aiLevel, first, vsai){
 
       console.log(xPos);
       console.log(yPos);
-      var mouseDown = function(game, event){
-        game.numOfMoves++;
 
+      var mouseDown = function(game, event){
+        if(game.gameDone){
+          return;
+        }
         var xPos = canvas.offsetLeft - canvas.scrollLeft + canvas.clientLeft;
         var yPos = canvas.offsetTop - canvas.scrollTop + canvas.clientTop;
 
@@ -83,10 +89,12 @@ function Game(gameMode, aiLevel, first, vsai){
 
           game.setPieceToPlayer(0, 0, iX, iY);
         }else if(game.gameMode == 2){
-          var oX = parseInt(xPos/200);
-          var oY = parseInt(yPos/200);
-          var iX = parseInt(xPos/66.6) % 3;
-          var iY = parseInt(yPos/66.6) % 3;
+          var oX = parseInt(yPos/200);
+          var oY = parseInt(xPos/200);
+          
+         
+          var iX = parseInt(yPos/66.6) % 3;
+          var iY = parseInt(xPos/66.6) % 3;
 
           console.log(oX, oY, iX, iY);
           game.setPieceToPlayer(oX, oY, iX, iY);
@@ -273,14 +281,13 @@ function Game(gameMode, aiLevel, first, vsai){
      * Draws board using svg rather than webgl
      */
     Game.prototype.drawBoardAlt = function(){
+      
     };
 
     /*
      * Sets the piece of the board for the player
      */
     Game.prototype.setPieceToPlayer = function(outerX, outerY, innerX, innerY){
-      //DEBUG
-      console.log(innerX, innerY);
       if(this.gameMode == 1){
         //Check for valid move
         if(this.board[innerX][innerY] != 0){
@@ -292,6 +299,8 @@ function Game(gameMode, aiLevel, first, vsai){
 
         if(this.gameOver()){ //Check if game is over
           this.drawBoard();
+
+          this.gameDone = true;
           console.log(this.board);
           console.log("Game over. Player " + this.currentPlayer + " wins!");
           this.endScene();
@@ -303,40 +312,44 @@ function Game(gameMode, aiLevel, first, vsai){
 
         //If the next player is an AI, then get their move
         if((this.currentPlayer == 1 && this.player1AI) || (this.currentPlayer == 2 && this.player2AI)){
-          var move = this.ai.getMove(this.board, null);
+          var move = this.ai.getMove(this.board, null, null);
           this.setPieceToPlayer(0, 0, move.innerX, move.innerY);
         }else{
           this.drawBoard();
         }
       }else if(this.gameMode == 2){
-        if(this.board[outerX][outerY][innerX][innerY] != 0){ // Check for valid move
+        if(this.board[outerX][outerY][innerX][innerY] != 0 || this.boardsWon[(outerX*3) + outerY] != 0 || (this.numOfMoves > 0 )){ // Check for valid move
           console.log("invalid move!");
           return;
         }
 
         this.board[outerX][outerY][innerX][innerY] = this.currentPlayer;
-        console.log("Move made " + this.board[outerX][outerY][innerX][innerY]);
-        console.log(outerX + "" + outerY);
-        console.log(innerX + "" + innerY);
-;
+        //Check if the single board is now won
+        if(this.boardWon(outerX, outerY)){
+          this.boardsWon[(outerX*3) + outerY] = this.currentPlayer;
+          console.log("Single board won.");
+          console.log(this.boardsWon);
+        }
         if(this.gameOver()){ // Check if game is over
+          this.drawBoard();
+          this.gameDone = true;
           console.log("Game Over. Player "+ this.currentPlayer + " wins!");
           return;
         }
 
         this.currentPlayer = (this.currentPlayer % 2) + 1;
-        console.log(this.currentPlayer);
         this.numOfMoves++;
 
         //If the next player is AI, then get their move, else set up next player's move.
-        if((this.currentPlayer == 1 && this.player1AI) || !(this.currentPlayer == 2 && this.player2AI)){
-          // var move = this.ai.getMove(this.board, {outerX: outerX, outerY: outerY, innerX: innerX, innerY: innerY});
-          // this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY);
+        if((this.currentPlayer == 1 && this.player1AI) || (this.currentPlayer == 2 && this.player2AI)){
+          var move = this.ai.getMove(this.board, innerX, innerY);
+          this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY);
         }else{
           //Set up next player's move
           this.drawBoard();
           console.log(this.board);
         }
+        
       }
     };
 
@@ -347,7 +360,7 @@ function Game(gameMode, aiLevel, first, vsai){
       }
       if(this.gameMode == 1){ // Normal mode
         if(this.board[0][0] != 0){
-          if(this.board[0][0] == this.board[0][1] && this.board[0][0] == this.board[0][2]){ // Left col
+          if(this.board[0][0] == this.board[1][0] && this.board[0][0] == this.board[2][0]){ // Left col
             return true;
           }
 
@@ -355,32 +368,32 @@ function Game(gameMode, aiLevel, first, vsai){
             return true;
           }
 
-          if(this.board[0][0] == this.board[1][0] && this.board[0][0] == this.board[2][0]){ // Top row
+          if(this.board[0][0] == this.board[0][1] && this.board[0][0] == this.board[0][2]){ // Top row
             return true;
           }
         }
 
-        if(this.board[2][0] != 0){
-          if(this.board[2][0] == this.board[1][1] && this.board[2][0] == this.board[0][2]){ // Right diag
+        if(this.board[0][2] != 0){
+          if(this.board[0][2] == this.board[1][1] && this.board[0][2] == this.board[2][0]){ // Right diag
             return true;
           }
 
-          if(this.board[2][0] == this.board[2][1] && this.board[2][0] == this.board[2][2]){ // Right col=
-            return true;
-          }
-        }
-
-        if(this.board[1][2] != 0){
-          if(this.board[1][2] == this.board[1][1] && this.board[1][2] == this.board[1][0]){ // Middle col
-            return true;
-          }
-
-          if(this.board[1][2] == this.board[0][2] && this.board[1][2] == this.board[2][2]){ // Bottom row
+          if(this.board[0][2] == this.board[1][2] && this.board[0][2] == this.board[2][2]){ // Right col=
             return true;
           }
         }
 
-        if(this.board[0][1] != 0 && this.board[0][1] == this.board[1][1] && this.board[0][1] == this.board[2][1]){ // Middle row
+        if(this.board[2][1] != 0){
+          if(this.board[2][1] == this.board[1][1] && this.board[2][1] == this.board[0][1]){ // Middle col
+            return true;
+          }
+
+          if(this.board[2][1] == this.board[2][0] && this.board[2][1] == this.board[2][2]){ // Bottom row
+            return true;
+          }
+        }
+
+        if(this.board[1][0] != 0 && this.board[1][0] == this.board[1][1] && this.board[1][0] == this.board[1][2]){ // Middle row
           return true;
         }
 
@@ -392,10 +405,90 @@ function Game(gameMode, aiLevel, first, vsai){
 
         return false;
       }else if(this.gameMode == 2){ // Ultimate mode
+        if(this.boardsWon[0] != 0){
+          if(this.boardsWon[0] == this.boardsWon[3] && this.boardsWon[0] == this.boardsWon[6]){ // Left col
+            return true;
+          }
 
+          if(this.boardsWon[0] == this.boardsWon[4] && this.boardsWon[0] == this.boardsWon[8]){ //Left Diag
+            return true;
+          }
+
+          if(this.boardsWon[0] == this.boardsWon[1] && this.boardsWon[0] == this.boardsWon[2]){ // Top row
+            return true;
+          }
+        }
+
+        if(this.boardsWon[2] != 0){
+          if(this.boardsWon[2] == this.boardsWon[4] && this.boardsWon[2] == this.boardsWon[6]){ // Right diag
+            return true;
+          }
+
+          if(this.boardsWon[2] == this.boardsWon[5] && this.boardsWon[2] == this.boardsWon[8]){ // Right col
+            return true;
+          }
+        }
+
+        if(this.boardsWon[7] != 0){
+          if(this.boardsWon[7] == this.boardsWon[4] && this.boardsWon[7] == this.boardsWon[1]){ // Middle col
+            return true;
+          }
+
+          if(this.boardsWon[7] == this.boardsWon[6] && this.boardsWon[7] == this.boardsWon[8]){ // Bottom row
+            return true;
+          }
+        }
+
+        if(this.boardsWon[3] != 0 && this.boardsWon[3] == this.boardsWon[4] && this.boardsWon[3] == this.boardsWon[5]){ // Middle row
+          return true;
+        }
         return false;
       }
     };
+
+    /*
+     * Checks if a single board for ultimate verison is won
+     */
+    Game.prototype.boardWon = function(oX, oY){
+      if(this.board[oX][oY][0][0] != 0){
+          if(this.board[oX][oY][0][0] == this.board[oX][oY][0][1] && this.board[oX][oY][0][0] == this.board[oX][oY][0][2]){ // Left col
+            return true;
+          }
+
+          if(this.board[oX][oY][0][0] == this.board[oX][oY][1][1] && this.board[oX][oY][0][0] == this.board[oX][oY][2][2]){ //Left Diag
+            return true;
+          }
+
+          if(this.board[oX][oY][0][0] == this.board[oX][oY][1][0] && this.board[oX][oY][0][0] == this.board[oX][oY][2][0]){ // Top row
+            return true;
+          }
+      }
+
+      if(this.board[oX][oY][0][2] != 0){
+        if(this.board[oX][oY][0][2] == this.board[oX][oY][1][1] && this.board[oX][oY][0][2] == this.board[oX][oY][2][0]){ // Right diag
+          return true;
+        }
+
+        if(this.board[oX][oY][0][2] == this.board[oX][oY][1][2] && this.board[oX][oY][2][0] == this.board[oX][oY][2][2]){ // Right col
+          return true;
+        }
+      }
+
+      if(this.board[oX][oY][2][1] != 0){
+        if(this.board[oX][oY][2][1] == this.board[oX][oY][1][1] && this.board[oX][oY][2][1] == this.board[oX][oY][1][0]){ // Middle col
+          return true;
+        }
+
+        if(this.board[oX][oY][2][1] == this.board[oX][oY][2][0] && this.board[oX][oY][2][1] == this.board[oX][oY][2][2]){ // Bottom row
+          return true;
+        }
+      }
+
+      if(this.board[oX][oY][1][0] != 0 && this.board[oX][oY][1][0] == this.board[oX][oY][1][1] && this.board[oX][oY][0][1] == this.board[oX][oY][1][2]){ // Middle row
+        return true;
+      }
+      return false;
+    }
 
     /*
      * Checks for ties by looking for any piece that isn't claimed
