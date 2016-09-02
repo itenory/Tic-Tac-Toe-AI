@@ -3,13 +3,15 @@ var AI = function(level, mode, player){
   this.gameMode = mode;
   this.aiPlayer = player;
   this.aiOpponent = (player%2) + 1;
+  if(mode == 2){ //Ultimate mode, keep track of boards won
+
+  }
 
   if(typeof this.getMove != "function"){
     console.log("Adding AI fucntions");
 
-    AI.prototype.getMove = function(currentBoard, lastMove){
+    AI.prototype.getMove = function(currentBoard, x, y){
       this.possibleBoard = currentBoard;
-      console.log(lastMove);
 
       if(this.aiLevel == 1){
         this.depthBound = 2;
@@ -21,9 +23,10 @@ var AI = function(level, mode, player){
         this.depthBound = 8;
       }
       console.log("Finding AI's move.");
-      var nextMove = this.minmaxSearch(this.aiPlayer, 0, lastMove);
+      var nextMove = this.minmaxSearch(this.aiPlayer, 0, x, y);
       console.log("Move found: ");
       console.log(nextMove);
+
       return nextMove;
     };
 
@@ -33,7 +36,7 @@ var AI = function(level, mode, player){
      * depth The depth of the search tree (Initially 0).
      * lastMove The last move made on teh board
      */
-    AI.prototype.minmaxSearch = function(player, depth, lastMove){
+    AI.prototype.minmaxSearch = function(player, depth, x, y){
       /*
         1. check depth
         2. get possible moves
@@ -41,15 +44,15 @@ var AI = function(level, mode, player){
         4. return
        */
       if(depth == this.depthBound){
-        return this.evaluation();
+        return this.evaluation(depth);
       }
 
-      var possibleMoves = this.getPossibleMoves(lastMove);
+      var possibleMoves = this.getPossibleMoves(x, y);
 
       var bestMove;
       var bestScore;
       if(possibleMoves.length == 0){
-        return this.evaluation();
+        return this.evaluation(depth);
       }
 
       // Conduct search
@@ -59,7 +62,7 @@ var AI = function(level, mode, player){
         for(var i = 0; i < possibleMoves.length; i++){
           this.setMove(possibleMoves[i], player);
 
-          var score = this.minmaxSearch((player%2)+1, depth+1, possibleMoves[i]);
+          var score = this.minmaxSearch((player%2)+1, depth+1, possibleMoves[i].innerX, possibleMoves[i].innerY);
           if(score > bestScore){ // min
             bestScore = score;
             bestMove = possibleMoves[i];
@@ -72,8 +75,7 @@ var AI = function(level, mode, player){
 
         for(var j = 0; j < possibleMoves.length; j++){
           this.setMove(possibleMoves[j], player);
-
-          var score = this.minmaxSearch((player%2)+1, depth+1, possibleMoves[j]);
+          var score = this.minmaxSearch((player%2)+1, depth+1, possibleMoves[j].innerX, possibleMoves[j].innerY);
           if(score < bestScore){ // min
             bestScore = score;
             bestMove = possibleMoves[j];
@@ -98,7 +100,7 @@ var AI = function(level, mode, player){
      * a Aplha
      * b Beta
      */
-    AI.prototype.minmaxSearchPruning = function(player, depth, lastMove, a, b){
+    AI.prototype.minmaxSearchrchPruning = function(player, depth, lastMove, a, b){
     };
 
     /*
@@ -119,7 +121,7 @@ var AI = function(level, mode, player){
      *  Ultimate mode uses last move to determind where the player can go.
      * lastMove The last move made on the board.
      */
-    AI.prototype.getPossibleMoves = function(lastMove){
+    AI.prototype.getPossibleMoves = function(x, y){
       //Check if game is over
       if(this.gameWonBy(1) || this.gameWonBy(2)){
         return [];
@@ -137,13 +139,15 @@ var AI = function(level, mode, player){
         }
       }else if(this.gameMode == 2){ // Ultimate mode
         //Checks if the inner board is won to determind moves.
-        if(this.singleWon(lastMove.innerX, lastMove.innerY)){
+        if(this.singleWon(x, y)){
           for(var i = 0; i < 3; i++){
             for(var j = 0; j < 3; j++){
-              for(var k = 0; k < 3; k++){
-                for(var l = 0; l < 3; l++){
-                  if(this.possibleBoard[i][j][k][l] == 0){
-                    moves.push({outerX: i, outerY: j, innerX: k, innerY: l});
+              if(!this.singleWon(i,j)){ // If the board is already won, skip it
+                for(var k = 0; k < 3; k++){
+                  for(var l = 0; l < 3; l++){
+                    if(this.possibleBoard[i][j][k][l] == 0){
+                      moves.push({outerX: i, outerY: j, innerX: k, innerY: l});
+                    }
                   }
                 }
               }
@@ -152,8 +156,8 @@ var AI = function(level, mode, player){
         }else{
           for(var i = 0; i < 3; i++){
             for(var j = 0; j < 3; j++){
-              if(this.possibleBoard[lastMove.innerX][lastMove.innerY][i][j] == 0){
-                moves.push({outerX: lastMove.innerX, outerY: lastMove.outerY, innerX: i, innerY: j});
+              if(this.possibleBoard[x][y][i][j] == 0){
+                moves.push({outerX: x, outerY: y, innerX: i, innerY: j});
               }
             }
           }
@@ -191,12 +195,12 @@ var AI = function(level, mode, player){
         }
       }
 
-      if(this.possibleBoard[outerX][outerY][1][2] != 0){
-        if(this.possibleBoard[outerX][outerY][1][2] == this.possibleBoard[outerX][outerY][1][1] && this.possibleBoard[outerX][outerY][1][2] == this.possibleBoard[outerX][outerY][1][0]){ // Middle col
+      if(this.possibleBoard[outerX][outerY][2][1] != 0){
+        if(this.possibleBoard[outerX][outerY][2][1] == this.possibleBoard[outerX][outerY][1][1] && this.possibleBoard[outerX][outerY][2][1] == this.possibleBoard[outerX][outerY][0][1]){ // Middle col
           return true;
         }
 
-        if(this.possibleBoard[outerX][outerY][1][2] == this.possibleBoard[outerX][outerY][0][2] && this.possibleBoard[outerX][outerY][1][2] == this.possibleBoard[outerX][outerY][2][2]){ // Bottom row
+        if(this.possibleBoard[outerX][outerY][2][1] == this.possibleBoard[outerX][outerY][2][0] && this.possibleBoard[outerX][outerY][2][1] == this.possibleBoard[outerX][outerY][2][2]){ // Bottom row
           return true;
         }
       }
@@ -211,13 +215,15 @@ var AI = function(level, mode, player){
     /*
      * Evaluation function for min max search. Checks for game mode.
      */
-    AI.prototype.evaluation = function(){
+    AI.prototype.evaluation = function(depth){
       if(this.gameMode == 1){ // Normal mode
         if(this.gameWonBy(this.aiOpponent)){
-          return -10;
+          return depth - 10;
         }else if(this.gameWonBy(this.aiPlayer)){
-          return 10;
+          return 10 - depth;
         }
+
+        return 0;
       }else if(this.gameMode == 2){ // Ultimate mode
         var score = 0;
 
