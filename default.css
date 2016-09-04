@@ -1,4 +1,16 @@
 body{
   background-color: black;
-  color: white;  
+  color: white;
+}
+
+.piece{
+  fill: white;
+}
+
+#player1{
+  fill: red;
+}
+
+#player2{
+  fill: blue;
 }
