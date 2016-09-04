@@ -11,7 +11,7 @@ function Game(gameMode, aiLevel, first, vsai){
     this.ai = new AI(aiLevel, gameMode, 2);
   }
   if(gameMode == 2){ // Use for ultimate mode to keep track single board wins
-    this.boardsWon = [0,0,0,0,0,0,0,0,0]; 
+    this.boardsWon = [0,0,0,0,0,0,0,0,0];
   }
 
   //Makes sure methods are not declared multiply times.
@@ -91,8 +91,8 @@ function Game(gameMode, aiLevel, first, vsai){
         }else if(game.gameMode == 2){
           var oX = parseInt(yPos/200);
           var oY = parseInt(xPos/200);
-          
-         
+
+
           var iX = parseInt(yPos/66.6) % 3;
           var iY = parseInt(xPos/66.6) % 3;
 
@@ -143,24 +143,24 @@ function Game(gameMode, aiLevel, first, vsai){
       //Try first with webgl, if it doesn't work than use svgs
       var canvas = document.getElementById("gameboard");
       var gl = canvas.getContext("experimental-webgl");
-
+      gl = null;
       if(!gl){
         alert("ERROR This browser does not support WebGL, using an altinate method.");
-        drawBoardAlt();
+        this.drawBoardAlt();
         return;
       }
 
-      //Clear 
+      //Clear
       gl.clearColor(0.0, 0.0, 0.0, 1.0);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
       //Compile shader
       var vertexShader = gl.createShader(gl.VERTEX_SHADER);
       var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-      
+
       gl.shaderSource(vertexShader, vertexShaderText);
       gl.shaderSource(fragmentShader, fragmentShaderText);
-      
+
       gl.compileShader(vertexShader);
       gl.compileShader(fragmentShader);
 
@@ -169,20 +169,20 @@ function Game(gameMode, aiLevel, first, vsai){
       gl.attachShader(program, vertexShader);
       gl.attachShader(program, fragmentShader);
       gl.linkProgram(program);
-  
+
 
       //Function for getting vertices for squares
       var verticesSquare = function (topLeftX, topLeftY, length, r, g, b, buffer){
         var vertices = [];
-        
+
         vertices.push(topLeftX + buffer, topLeftY - buffer, r, g, b); // Top left
         vertices.push(topLeftX + buffer, (topLeftY - length) + buffer, r, g, b); // Bottom left
         vertices.push(topLeftX + (length - buffer), (topLeftY - length) + buffer, r,g,b); // Bottom Right
-        
+
         vertices.push(topLeftX + buffer, topLeftY - buffer, r, g, b); // Top left
         vertices.push(topLeftX + (length - buffer), (topLeftY - length) + buffer, r,g,b); // Bottom Right
         vertices.push( topLeftX + (length - buffer), topLeftY - buffer, r,g,b); // Top Right
-        
+
         return vertices;
       }
 
@@ -197,17 +197,17 @@ function Game(gameMode, aiLevel, first, vsai){
               var square = verticesSquare(-1 + (i*2/3),1 - (j*2/3) , 2/3, .5, .5, .5, .05);
               for(var k = 0; k < square.length; k++){
                 boardVertices.push(square[k]);
-              } 
-            }else if(this.board[i][j] == 1){ // Red 
+              }
+            }else if(this.board[i][j] == 1){ // Red
               var square = verticesSquare(-1 + (i*2/3),1 - (j*2/3) , 2/3, 1, 0, 0, .1);
               for(var k = 0; k < square.length; k++){
                 boardVertices.push(square[k]);
-              } 
+              }
             }else{ // Blue
               var square = verticesSquare(-1 + (i*2/3),1 - (j*2/3) , 2/3, 0, 1, 0, .1);
               for(var k = 0; k < square.length; k++){
                 boardVertices.push(square[k]);
-              } 
+              }
             }
           }
         }
@@ -222,17 +222,17 @@ function Game(gameMode, aiLevel, first, vsai){
                   var square = verticesSquare(-1 + (l * 2/9) + (j*2/3),1 - (k*2/9) -(i*2/3) , 2/9, .5, .5, .5, .05);
                   for(var m = 0; m < square.length; m++){
                     boardVertices.push(square[m]);
-                  } 
+                  }
                 }else if(this.board[i][j][k][l] == 1){// Player 1 (Red)
                   var square = verticesSquare(-1 + (l * 2/9) + (j*2/3),1 - (k*2/9) -(i*2/3) , 2/9, 1, 0, 0, .05);
                   for(var m = 0; m < square.length; m++){
                     boardVertices.push(square[m]);
-                  } 
+                  }
                 }else{ // Player 2 (Blue)
                   var square = verticesSquare(-1 + (l * 2/9) + (j*2/3),1 - (k*2/9) -(i*2/3) , 2/9, 0, 0, 1, .05);
                   for(var m = 0; m < square.length; m++){
                     boardVertices.push(square[m]);
-                  } 
+                  }
                 }
               }
             }
@@ -240,16 +240,16 @@ function Game(gameMode, aiLevel, first, vsai){
         }
         numOfSquares = 81;
       }
-     
+
       //Creating buffers
       var boardVertexBufferObject = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, boardVertexBufferObject);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(boardVertices), gl.STATIC_DRAW);
-      
-      
+
+
       var positionAttribLocation = gl.getAttribLocation(program, "vertPosition");
       var colorAttribLocation = gl.getAttribLocation(program, "vertColor");
-      
+
       gl.vertexAttribPointer(
         positionAttribLocation,
         2, // Number of elements per attribute;
@@ -258,8 +258,8 @@ function Game(gameMode, aiLevel, first, vsai){
         5 * Float32Array.BYTES_PER_ELEMENT,
         0
       );
-      
-      
+
+
       gl.vertexAttribPointer(
         colorAttribLocation,
         3,
@@ -268,10 +268,10 @@ function Game(gameMode, aiLevel, first, vsai){
         5 * Float32Array.BYTES_PER_ELEMENT,
         2 * Float32Array.BYTES_PER_ELEMENT
       );
-      
+
       gl.enableVertexAttribArray(positionAttribLocation);
       gl.enableVertexAttribArray(colorAttribLocation);
-      
+
       //Start
       gl.useProgram(program);
       gl.drawArrays(gl.TRIANGLES, 0, 3*(2*numOfSquares));
@@ -281,7 +281,199 @@ function Game(gameMode, aiLevel, first, vsai){
      * Draws board using svg rather than webgl
      */
     Game.prototype.drawBoardAlt = function(){
-      
+      var boardSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      var divContainer = document.getElementById("game");
+
+      var h = 600; var w = 600;
+      boardSVG.setAttribute('id', 'gameboard');
+      boardSVG.setAttribute('height', h);
+      boardSVG.setAttribute('width', w);
+
+
+      //Functions for drawing board and drawing lines
+      var drawLines = function(x1, x2, y1, y2, color, width){
+        var svgns = "http://www.w3.org/2000/svg";
+        var line = document.createElementNS(svgns, "line");
+
+        line.setAttributeNS(null, "x1", x1);
+        line.setAttributeNS(null, "x2", x2);
+        line.setAttributeNS(null, "y1", y1);
+        line.setAttributeNS(null, "y2", y2);
+        line.setAttributeNS(null, "stroke", color);
+        line.setAttributeNS(null, "stroke-width", width);
+
+        return line;
+      };
+
+      // var drawSingle = function(boardElem, height, width, x, y, spacing, id){
+      //   var svgns = "http://www.w3.org/2000/svg";
+      //   var rect = document.createElementNS(svgns, "rect");
+      //   rect.setAttributeNS(null, "width", width);
+      //   rect.setAttributeNS(null, "height", height);
+      //   rect.setAttributeNS(null, "x", x);
+      //   rect.setAttributeNS(null, "y", y);
+      //   rect.setAttributeNS(null, "id", id);
+      //   rect.setAttributeNS(null, "class", "single-board");
+      //   boardElem.appendChild(rect);
+      //
+      //   //Create inner rectangles and lines
+      //   for(var i = 0; i < 3; i++){
+      //     for(var j = 0; j < 3; j++){
+      //       var shape = document.createElementNS(svgns, "rect");
+      //       shape.setAttributeNS(null, "width", (width/3) - 30);
+      //       shape.setAttributeNS(null, "height", (height/3) - 30);
+      //       shape.setAttributeNS(null, "x", ((width / 3)* j) + 15 + x);
+      //       shape.setAttributeNS(null, "y", (height / 3) * i + 15 + y);
+      //       shape.setAttributeNS(null, "id", id + i + j);
+      //       shape.setAttributeNS(null, "class", "piece");
+      //       boardElem.appendChild(shape);
+      //
+      //       //add event handles
+      //
+      //       var setEvents = function(elem, gameObj){
+      //           elem.addEventListener("click", function(){
+      //             //If piece is playable, set the move and disable the piece for play
+      //             if(elem.getAttribute('class').includes("piece")){
+      //               elem.setAttribute('class',"player" + gameObj.currentPlayer);
+      //               gameObj.setPieceForPlayer(parseInt(id.charAt(0)),parseInt(id.charAt(1)),parseInt(id.charAt(2)),parseInt(id.charAt(3)) );
+      //             }
+      //           });
+      //       }
+      //
+      //       //Create lines
+      //       if(i === 0 && j > 0){
+      //         var line = document.createElementNS(svgns, "line");
+      //         line.setAttributeNS(null, "x1", ((width/3) * j) + x);
+      //         line.setAttributeNS(null, "x2", ((width/3) * j) + x);
+      //         line.setAttributeNS(null, "y1", y + spacing);
+      //         line.setAttributeNS(null, "y2", y + height - spacing);
+      //         line.setAttributeNS(null, "stroke", "pink");
+      //         line.setAttributeNS(null, "stroke-width", 2);
+      //
+      //         boardElem.appendChild(line);
+      //       }else if(i === 1 && j > 0){
+      //         var line = document.createElementNS(svgns, "line");
+      //         line.setAttributeNS(null, "x1", x + spacing);
+      //         line.setAttributeNS(null, "x2", x + width - spacing);
+      //         line.setAttributeNS(null, "y1", ((height/3) * j) + y);
+      //         line.setAttributeNS(null, "y2", ((height/3) * j) + y);
+      //         line.setAttributeNS(null, "stroke", "pink");
+      //         line.setAttributeNS(null, "stroke-width", 2);
+      //
+      //         boardElem.appendChild(line);
+      //       }
+      //     }
+      //   }
+      // };
+
+      //Check for game modes
+      if(this.gameMode == 1){
+        this.drawSingle(boardSVG, h, w, 0, 0, 0, "00");
+      }else if(this.gameMode == 2){
+        //Draw 9 singles boards
+        for(var i = 0; i < 3; i++){
+            for(var j = 0; j < 3; j++){
+              this.drawSingle(boardSVG, h/3, w/3, (w/3)*j, (h/3)*i, 10, i + "" + j);
+            }
+        }
+        //Draw the main divider lines
+        var verticeLine = drawLines(w/3, w/3, 0, h, "pink", 5);
+        boardSVG.appendChild(verticeLine);
+
+        verticeLine = drawLines((w/3)*2, (w/3)*2, 0, h, "pink", 5);
+        boardSVG.appendChild(verticeLine);
+
+        verticeLine = drawLines(0, w, h/3, h/3, "pink", 5);
+        boardSVG.appendChild(verticeLine);
+
+        verticeLine = drawLines(0, w, (h/3)*2, (h/3)*2, "pink", 5);
+        boardSVG.appendChild(verticeLine);
+
+
+      }
+
+      //Add the svg to the div, and remove the canvas tag
+      divContainer.appendChild(boardSVG);
+      var canvas = document.getElementById("gameboard");
+      divContainer.removeChild(canvas);
+    };
+
+    Game.prototype.drawSingle = function(boardElem, height, width, x, y, spacing, id){
+      var svgns = "http://www.w3.org/2000/svg";
+      var rect = document.createElementNS(svgns, "rect");
+      rect.setAttributeNS(null, "width", width);
+      rect.setAttributeNS(null, "height", height);
+      rect.setAttributeNS(null, "x", x);
+      rect.setAttributeNS(null, "y", y);
+      rect.setAttributeNS(null, "id", id);
+      rect.setAttributeNS(null, "class", "single-board");
+      boardElem.appendChild(rect);
+
+      var mouseDown = function(game, piece, event){
+        console.log(game);
+        if(piece.getAttribute('class').includes('piece')){
+          console.log("set piece");
+        }else{
+          console.log("Invalid move");
+        }
+        console.log("mousedown")
+      };
+      //Create inner rectangles and lines
+      for(var i = 0; i < 3; i++){
+        for(var j = 0; j < 3; j++){
+          var shape = document.createElementNS(svgns, "rect");
+          shape.setAttributeNS(null, "width", (width/3) - 30);
+          shape.setAttributeNS(null, "height", (height/3) - 30);
+          shape.setAttributeNS(null, "x", ((width / 3)* j) + 15 + x);
+          shape.setAttributeNS(null, "y", (height / 3) * i + 15 + y);
+          shape.setAttributeNS(null, "id", id + i + j);
+          shape.setAttributeNS(null, "class", "piece");
+          boardElem.appendChild(shape);
+
+          //add event handles
+          // shape.addEventListener("click", function(game){
+          //   console.log(game);
+          //   if(shape.getAttribute('class').includes('piece')){
+          //     shape.setAttribute('class', "player" + game.currentPlayer);
+          //     var id = shape.getAttribute('id');
+          //     game.setPieceToPlayer(parseInt(id.charAt(0)), parseInt(id.charAt(1)), parseInt(id.charAt(2)), parseInt(id.charAt(3)));
+          //   }else{
+          //     console.log("Invalid move");
+          //   }
+          // }(this));
+
+          shape.addEventListener('click', function(game, piece, event){
+            return function(game,piece){ mouseDown(game, piece, event);};
+          }(this, shape), false);
+
+          //Create lines
+          if(i === 0 && j > 0){
+            var line = document.createElementNS(svgns, "line");
+            line.setAttributeNS(null, "x1", ((width/3) * j) + x);
+            line.setAttributeNS(null, "x2", ((width/3) * j) + x);
+            line.setAttributeNS(null, "y1", y + spacing);
+            line.setAttributeNS(null, "y2", y + height - spacing);
+            line.setAttributeNS(null, "stroke", "pink");
+            line.setAttributeNS(null, "stroke-width", 2);
+
+            boardElem.appendChild(line);
+          }else if(i === 1 && j > 0){
+            var line = document.createElementNS(svgns, "line");
+            line.setAttributeNS(null, "x1", x + spacing);
+            line.setAttributeNS(null, "x2", x + width - spacing);
+            line.setAttributeNS(null, "y1", ((height/3) * j) + y);
+            line.setAttributeNS(null, "y2", ((height/3) * j) + y);
+            line.setAttributeNS(null, "stroke", "pink");
+            line.setAttributeNS(null, "stroke-width", 2);
+
+            boardElem.appendChild(line);
+          }
+        }
+      }
+    };
+
+    Game.prototype.addEventHandld = function(){
+
     };
 
     /*
@@ -349,7 +541,7 @@ function Game(gameMode, aiLevel, first, vsai){
           this.drawBoard();
           console.log(this.board);
         }
-        
+
       }
     };
 
