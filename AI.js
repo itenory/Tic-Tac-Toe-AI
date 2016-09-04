@@ -10,6 +10,12 @@ var AI = function(level, mode, player){
   if(typeof this.getMove != "function"){
     console.log("Adding AI fucntions");
 
+    /*
+     * Gets the next move for the AI
+     * currentBoard The current board in the gameMode
+     * x Last move innerX
+     * y Last move innerY
+     */
     AI.prototype.getMove = function(currentBoard, x, y){
       this.possibleBoard = currentBoard;
 
