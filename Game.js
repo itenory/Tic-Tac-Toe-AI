@@ -344,6 +344,10 @@ function Game(gameMode, aiLevel, first, vsai){
       divContainer.removeChild(canvas);
     };
 
+    /*
+     * Draws a single board using SVGs. Used for ultimate to draw multiple boards
+     * 
+     */
     Game.prototype.drawSingle = function(boardElem, height, width, x, y, spacing, id){
       var svgns = "http://www.w3.org/2000/svg";
       var rect = document.createElementNS(svgns, "rect");
@@ -440,7 +444,7 @@ function Game(gameMode, aiLevel, first, vsai){
 
         //If the next player is an AI, then get their move
         if(this.currentPlayer == 1 && this.player1AI){
-          var move = this.ai.getMove(this.board, null, null);
+          var move = this.ai1.getMove(this.board, null, null);
           if(!this.gl){
             //Perform click for AI only for SVG version
             var elem = document.getElementById("00" + move.innerX + "" + move.innerY);
@@ -449,7 +453,7 @@ function Game(gameMode, aiLevel, first, vsai){
           this.setPieceToPlayer(0, 0, move.innerX, move.innerY);
 
         }else if(this.currentPlayer == 2 && this.player2AI){
-          var move = this.ai.getMove(this.board, null, null);
+          var move = this.ai2.getMove(this.board, null, null);
           if(!this.gl){
             //Perform click for AI only for SVG version
             var elem = document.getElementById("00" + move.innerX + "" + move.innerY);
@@ -502,7 +506,7 @@ function Game(gameMode, aiLevel, first, vsai){
 
         //If the next player is AI, then get their move, else set up next player's move.
         if(this.currentPlayer == 1 && this.player1AI){
-          var move = this.ai.getMove(this.board, innerX, innerY);
+          var move = this.ai1.getMove(this.board, innerX, innerY);
           if(!this.gl){
             //Perform click for AI only for SVG version
             var elem = document.getElementById("" + move.outerX + "" + move.outerY + "" + move.innerX + "" + move.innerY);
@@ -510,7 +514,7 @@ function Game(gameMode, aiLevel, first, vsai){
           }
           this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY);
         }else if(this.currentPlayer == 2 && this.player2AI){
-          var move = this.ai.getMove(this.board, innerX, innerY);
+          var move = this.ai2.getMove(this.board, innerX, innerY);
           if(!this.gl){
             //Perform click for AI only for SVG version
             var elem = document.getElementById("" + move.outerX + "" + move.outerY + "" + move.innerX + "" + move.innerY);
@@ -527,6 +531,9 @@ function Game(gameMode, aiLevel, first, vsai){
       }
     };
 
+    /*
+     * Checks if game is over for all modes by looking for wins and ties.
+     */
     Game.prototype.gameOver = function(){
       //Check for tie
       if(this.gameTied()){
