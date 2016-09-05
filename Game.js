@@ -6,12 +6,18 @@ function Game(gameMode, aiLevel, first, vsai){
   this.player1AI = false;
   this.player2AI = vsai;
   this.gameDone = false;
-
+  this.gl;
+  
+  //Create ai objects for player
+  if(vsai){
+    this.ai1 = new AI(aiLevel, gameMode, 1);
+  }
   if(vsai){ // If there is an ai player, create the object
-    this.ai = new AI(aiLevel, gameMode, 2);
+    this.ai2 = new AI(aiLevel, gameMode, 2);
   }
   if(gameMode == 2){ // Use for ultimate mode to keep track single board wins
     this.boardsWon = [0,0,0,0,0,0,0,0,0];
+    this.lastMove = null;
   }
 
   //Makes sure methods are not declared multiply times.
@@ -142,33 +148,34 @@ function Game(gameMode, aiLevel, first, vsai){
 
       //Try first with webgl, if it doesn't work than use svgs
       var canvas = document.getElementById("gameboard");
-      var gl = canvas.getContext("experimental-webgl");
-      gl = null;
-      if(!gl){
+      this.gl = canvas.getContext("experimental-webgl");
+      this.gl = null;
+
+      if(!this.gl){
         alert("ERROR This browser does not support WebGL, using an altinate method.");
         this.drawBoardAlt();
         return;
       }
 
       //Clear
-      gl.clearColor(0.0, 0.0, 0.0, 1.0);
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
       //Compile shader
-      var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-      var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+      var vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
+      var fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
 
-      gl.shaderSource(vertexShader, vertexShaderText);
-      gl.shaderSource(fragmentShader, fragmentShaderText);
+      this.gl.shaderSource(vertexShader, vertexShaderText);
+      this.gl.shaderSource(fragmentShader, fragmentShaderText);
 
-      gl.compileShader(vertexShader);
-      gl.compileShader(fragmentShader);
+      this.gl.compileShader(vertexShader);
+      this.gl.compileShader(fragmentShader);
 
       //Create Program
-      var program = gl.createProgram();
-      gl.attachShader(program, vertexShader);
-      gl.attachShader(program, fragmentShader);
-      gl.linkProgram(program);
+      var program = this.gl.createProgram();
+      this.gl.attachShader(program, vertexShader);
+      this.gl.attachShader(program, fragmentShader);
+      this.gl.linkProgram(program);
 
 
       //Function for getting vertices for squares
@@ -242,39 +249,39 @@ function Game(gameMode, aiLevel, first, vsai){
       }
 
       //Creating buffers
-      var boardVertexBufferObject = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, boardVertexBufferObject);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(boardVertices), gl.STATIC_DRAW);
+      var boardVertexBufferObject = this.gl.createBuffer();
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, boardVertexBufferObject);
+     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(boardVertices), this.gl.STATIC_DRAW);
 
 
-      var positionAttribLocation = gl.getAttribLocation(program, "vertPosition");
-      var colorAttribLocation = gl.getAttribLocation(program, "vertColor");
+      var positionAttribLocation = this.gl.getAttribLocation(program, "vertPosition");
+      var colorAttribLocation = this.gl.getAttribLocation(program, "vertColor");
 
-      gl.vertexAttribPointer(
+      this.gl.vertexAttribPointer(
         positionAttribLocation,
         2, // Number of elements per attribute;
-        gl.FLOAT,
-        gl.FALSE,
+        this.gl.FLOAT,
+        this.gl.FALSE,
         5 * Float32Array.BYTES_PER_ELEMENT,
         0
       );
 
 
-      gl.vertexAttribPointer(
+      this.gl.vertexAttribPointer(
         colorAttribLocation,
         3,
-        gl.FLOAT,
-        gl.FALSE,
+        this.gl.FLOAT,
+        this.gl.FALSE,
         5 * Float32Array.BYTES_PER_ELEMENT,
         2 * Float32Array.BYTES_PER_ELEMENT
       );
 
-      gl.enableVertexAttribArray(positionAttribLocation);
-      gl.enableVertexAttribArray(colorAttribLocation);
+      this.gl.enableVertexAttribArray(positionAttribLocation);
+      this.gl.enableVertexAttribArray(colorAttribLocation);
 
       //Start
-      gl.useProgram(program);
-      gl.drawArrays(gl.TRIANGLES, 0, 3*(2*numOfSquares));
+      this.gl.useProgram(program);
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, 3*(2*numOfSquares));
     };
 
     /*
@@ -304,67 +311,6 @@ function Game(gameMode, aiLevel, first, vsai){
 
         return line;
       };
-
-      // var drawSingle = function(boardElem, height, width, x, y, spacing, id){
-      //   var svgns = "http://www.w3.org/2000/svg";
-      //   var rect = document.createElementNS(svgns, "rect");
-      //   rect.setAttributeNS(null, "width", width);
-      //   rect.setAttributeNS(null, "height", height);
-      //   rect.setAttributeNS(null, "x", x);
-      //   rect.setAttributeNS(null, "y", y);
-      //   rect.setAttributeNS(null, "id", id);
-      //   rect.setAttributeNS(null, "class", "single-board");
-      //   boardElem.appendChild(rect);
-      //
-      //   //Create inner rectangles and lines
-      //   for(var i = 0; i < 3; i++){
-      //     for(var j = 0; j < 3; j++){
-      //       var shape = document.createElementNS(svgns, "rect");
-      //       shape.setAttributeNS(null, "width", (width/3) - 30);
-      //       shape.setAttributeNS(null, "height", (height/3) - 30);
-      //       shape.setAttributeNS(null, "x", ((width / 3)* j) + 15 + x);
-      //       shape.setAttributeNS(null, "y", (height / 3) * i + 15 + y);
-      //       shape.setAttributeNS(null, "id", id + i + j);
-      //       shape.setAttributeNS(null, "class", "piece");
-      //       boardElem.appendChild(shape);
-      //
-      //       //add event handles
-      //
-      //       var setEvents = function(elem, gameObj){
-      //           elem.addEventListener("click", function(){
-      //             //If piece is playable, set the move and disable the piece for play
-      //             if(elem.getAttribute('class').includes("piece")){
-      //               elem.setAttribute('class',"player" + gameObj.currentPlayer);
-      //               gameObj.setPieceForPlayer(parseInt(id.charAt(0)),parseInt(id.charAt(1)),parseInt(id.charAt(2)),parseInt(id.charAt(3)) );
-      //             }
-      //           });
-      //       }
-      //
-      //       //Create lines
-      //       if(i === 0 && j > 0){
-      //         var line = document.createElementNS(svgns, "line");
-      //         line.setAttributeNS(null, "x1", ((width/3) * j) + x);
-      //         line.setAttributeNS(null, "x2", ((width/3) * j) + x);
-      //         line.setAttributeNS(null, "y1", y + spacing);
-      //         line.setAttributeNS(null, "y2", y + height - spacing);
-      //         line.setAttributeNS(null, "stroke", "pink");
-      //         line.setAttributeNS(null, "stroke-width", 2);
-      //
-      //         boardElem.appendChild(line);
-      //       }else if(i === 1 && j > 0){
-      //         var line = document.createElementNS(svgns, "line");
-      //         line.setAttributeNS(null, "x1", x + spacing);
-      //         line.setAttributeNS(null, "x2", x + width - spacing);
-      //         line.setAttributeNS(null, "y1", ((height/3) * j) + y);
-      //         line.setAttributeNS(null, "y2", ((height/3) * j) + y);
-      //         line.setAttributeNS(null, "stroke", "pink");
-      //         line.setAttributeNS(null, "stroke-width", 2);
-      //
-      //         boardElem.appendChild(line);
-      //       }
-      //     }
-      //   }
-      // };
 
       //Check for game modes
       if(this.gameMode == 1){
@@ -409,15 +355,16 @@ function Game(gameMode, aiLevel, first, vsai){
       rect.setAttributeNS(null, "class", "single-board");
       boardElem.appendChild(rect);
 
-      var mouseDown = function(game, piece, event){
-        console.log(game);
-        if(piece.getAttribute('class').includes('piece')){
-          console.log("set piece");
+      var mouseDown = function(game, piece){
+        var id = piece.getAttributeNS(null, 'id'); 
+        if(piece.getAttributeNS(null, 'class').includes('piece')){
+          piece.setAttributeNS(null, 'class', "player" + game.currentPlayer);
+          game.setPieceToPlayer(parseInt(id.charAt(0)), parseInt(id.charAt(1)), parseInt(id.charAt(2)), parseInt(id.charAt(3)));
         }else{
           console.log("Invalid move");
         }
-        console.log("mousedown")
       };
+
       //Create inner rectangles and lines
       for(var i = 0; i < 3; i++){
         for(var j = 0; j < 3; j++){
@@ -430,20 +377,12 @@ function Game(gameMode, aiLevel, first, vsai){
           shape.setAttributeNS(null, "class", "piece");
           boardElem.appendChild(shape);
 
-          //add event handles
-          // shape.addEventListener("click", function(game){
-          //   console.log(game);
-          //   if(shape.getAttribute('class').includes('piece')){
-          //     shape.setAttribute('class', "player" + game.currentPlayer);
-          //     var id = shape.getAttribute('id');
-          //     game.setPieceToPlayer(parseInt(id.charAt(0)), parseInt(id.charAt(1)), parseInt(id.charAt(2)), parseInt(id.charAt(3)));
-          //   }else{
-          //     console.log("Invalid move");
-          //   }
-          // }(this));
-
-          shape.addEventListener('click', function(game, piece, event){
-            return function(game,piece){ mouseDown(game, piece, event);};
+          //Add event listener for clicks
+          shape.addEventListener('click', function(game, elem){
+            // console.log(elem);
+            return function(event){
+              mouseDown(game, elem);
+            }
           }(this, shape), false);
 
           //Create lines
@@ -472,10 +411,6 @@ function Game(gameMode, aiLevel, first, vsai){
       }
     };
 
-    Game.prototype.addEventHandld = function(){
-
-    };
-
     /*
      * Sets the piece of the board for the player
      */
@@ -490,10 +425,11 @@ function Game(gameMode, aiLevel, first, vsai){
         this.board[innerX][innerY] = this.currentPlayer;
 
         if(this.gameOver()){ //Check if game is over
-          this.drawBoard();
+          if(this.gl){
+            this.drawBoard();
+          }
 
           this.gameDone = true;
-          console.log(this.board);
           console.log("Game over. Player " + this.currentPlayer + " wins!");
           this.endScene();
           return;
@@ -503,14 +439,37 @@ function Game(gameMode, aiLevel, first, vsai){
         this.numOfMoves++;
 
         //If the next player is an AI, then get their move
-        if((this.currentPlayer == 1 && this.player1AI) || (this.currentPlayer == 2 && this.player2AI)){
+        if(this.currentPlayer == 1 && this.player1AI){
           var move = this.ai.getMove(this.board, null, null);
+          if(!this.gl){
+            //Perform click for AI only for SVG version
+            var elem = document.getElementById("00" + move.innerX + "" + move.innerY);
+            elem.setAttributeNS(null, 'class', 'player' + this.currentPlayer);
+          }
+          this.setPieceToPlayer(0, 0, move.innerX, move.innerY);
+
+        }else if(this.currentPlayer == 2 && this.player2AI){
+          var move = this.ai.getMove(this.board, null, null);
+          if(!this.gl){
+            //Perform click for AI only for SVG version
+            var elem = document.getElementById("00" + move.innerX + "" + move.innerY);
+            elem.setAttributeNS(null, 'class', 'player' + this.currentPlayer);
+          }
           this.setPieceToPlayer(0, 0, move.innerX, move.innerY);
         }else{
-          this.drawBoard();
+          //If using opengl
+          if(this.gl){
+            this.drawBoard();
+          }
         }
       }else if(this.gameMode == 2){
-        if(this.board[outerX][outerY][innerX][innerY] != 0 || this.boardsWon[(outerX*3) + outerY] != 0 || (this.numOfMoves > 0 )){ // Check for valid move
+        if(this.board[outerX][outerY][innerX][innerY] != 0 || this.boardsWon[(outerX*3) + outerY] != 0 || (this.lastMove && (outerX != this.lastMove.innerX || outerY != this.lastMove.innerY))){ // Check for valid move
+          if(!this.gl){
+            //Reset puice 
+            var elem = document.getElementById(outerX + "" + outerY + "" + innerX + "" + innerY);
+            elem.setAttributeNS(null, 'class', 'piece');
+          }
+          console.log(this.board[outerX][outerY][innerX][innerY]);
           console.log("invalid move!");
           return;
         }
@@ -522,26 +481,49 @@ function Game(gameMode, aiLevel, first, vsai){
           console.log("Single board won.");
           console.log(this.boardsWon);
         }
+
         if(this.gameOver()){ // Check if game is over
-          this.drawBoard();
+          if(this.gl){ // Check if using OpenGL
+            this.drawBoard();
+          }
           this.gameDone = true;
           console.log("Game Over. Player "+ this.currentPlayer + " wins!");
           return;
+        }
+
+        if(this.boardWon(innerX, innerY)){ // Check if the last
+          this.lastMove = null;
+        }else{
+          this.lastMove = {outerX: outerX, outerY: outerY, innerX: innerX, innerY: innerY};
         }
 
         this.currentPlayer = (this.currentPlayer % 2) + 1;
         this.numOfMoves++;
 
         //If the next player is AI, then get their move, else set up next player's move.
-        if((this.currentPlayer == 1 && this.player1AI) || (this.currentPlayer == 2 && this.player2AI)){
+        if(this.currentPlayer == 1 && this.player1AI){
           var move = this.ai.getMove(this.board, innerX, innerY);
+          if(!this.gl){
+            //Perform click for AI only for SVG version
+            var elem = document.getElementById("" + move.outerX + "" + move.outerY + "" + move.innerX + "" + move.innerY);
+            elem.setAttributeNS(null, 'class', 'player' + this.currentPlayer);
+          }
+          this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY);
+        }else if(this.currentPlayer == 2 && this.player2AI){
+          var move = this.ai.getMove(this.board, innerX, innerY);
+          if(!this.gl){
+            //Perform click for AI only for SVG version
+            var elem = document.getElementById("" + move.outerX + "" + move.outerY + "" + move.innerX + "" + move.innerY);
+            elem.setAttributeNS(null, 'class', 'player' + this.currentPlayer);
+          }
           this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY);
         }else{
           //Set up next player's move
-          this.drawBoard();
+          if(this.gl){
+            this.drawBoard();
+          }
           console.log(this.board);
         }
-
       }
     };
 
