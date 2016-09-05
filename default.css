@@ -7,10 +7,10 @@ body{
   fill: white;
 }
 
-#player1{
+.player1{
   fill: red;
 }
 
-#player2{
+.player2{
   fill: blue;
 }
