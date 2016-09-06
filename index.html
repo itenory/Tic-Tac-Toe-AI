@@ -10,7 +10,8 @@
         var mode = document.getElementsByName("mode");
         var diff = document.getElementsByName("difficulty");
         var first = document.getElementsByName("first");
-        var vsai = document.getElementsByName("vsai");
+        var vsai1 = document.getElementsByName("vsai1");
+        var vsai2 = document.getElementsByName("vsai2");
 
         for(var i = 0; i < 2; i++){
           if(first[i].checked){
@@ -31,14 +32,21 @@
           }
         }
         for(var i = 0; i < 2; i++){
-          if(vsai[i].checked){
-            vsai = Boolean(vsai[i].value);
+          if(vsai1[i].checked){
+            vsai1 = Boolean(vsai1[i].value);
+            break;
+          }
+        }
+        for(var i = 0; i < 2; i++){
+          if(vsai2[i].checked){
+            vsai2 = Boolean(vsai2[i].value);
             break;
           }
         }
 
         //Create game object
-        var game = new Game(mode, diff, first, vsai);
+        var game = new Game(mode, diff, first, vsai1, vsai2);
+
 
         //Start game loop
         console.log(game);
@@ -71,9 +79,14 @@
         <input type="radio" name="first" value="2" />Player 2 (AI or second human player)
       </div>
       <div class="group">
+        <span>Who is player 1?</span>
+        <input type="radio" name="vsai1" value="" checked/>Human
+        <input type="radio" name="vsai1" value="true"/>AI
+      </div>
+      <div class="group">
         <span>Who is player 2?</span>
-        <input type="radio" name="vsai" value="true" checked/>AI
-        <input type="radio" name="vsai" value=""/>Human player 2
+        <input type="radio" name="vsai2" value="" />Human
+        <input type="radio" name="vsai2" value="true" checked/>AI
       </div>
 
       <button onclick="setUpGame()">Start Game</button>
