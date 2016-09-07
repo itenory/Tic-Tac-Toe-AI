@@ -1,18 +1,17 @@
-function Game(gameMode, aiLevel, first, vsai){
+function Game(gameMode, aiLevel, first, vsai1, vsai2){
   this.gameMode = gameMode;
-  this.currentPlayer = first; // Human is player 1, AI/Human is player 2
-  this.playingAI = vsai;
+  this.currentPlayer = first;
   this.numOfMoves = 0;
-  this.player1AI = false;
-  this.player2AI = vsai;
+  this.player1AI = vsai1;
+  this.player2AI = vsai2;
   this.gameDone = false;
-  this.gl;
-  
+  this.gl; // GL context if using webgl, null otherwise
+
   //Create ai objects for player
-  if(vsai){
+  if(vsai1){
     this.ai1 = new AI(aiLevel, gameMode, 1);
   }
-  if(vsai){ // If there is an ai player, create the object
+  if(vsai2){ // If there is an ai player, create the object
     this.ai2 = new AI(aiLevel, gameMode, 2);
   }
   if(gameMode == 2){ // Use for ultimate mode to keep track single board wins
@@ -34,8 +33,35 @@ function Game(gameMode, aiLevel, first, vsai){
       menu.parentNode.removeChild(menu);
 
       this.setbackEnd();
-      this.setMouse();
       this.drawBoard();
+      console.log(0);
+
+      //If AI goes first, get and set their move. Redraw board
+      if(this.player1AI && this.currentPlayer == 1){
+        var move = this.ai1.getMove(this.board, -1, -1);
+        if(!this.gl){
+          //Perform click for AI only for SVG version
+          if(this.gameMode == 1){
+            var elem = document.getElementById("00" + move.innerX + "" + move.innerY);
+          }else if(this.gameMode == 2){
+            var elem = document.getElementById("" + move.outerX + "" + move.outerY + "" + move.innerX + "" + move.innerY);
+          }
+          elem.setAttributeNS(null, 'class', 'player' + this.currentPlayer);
+        }
+        this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY) 
+      }else if(this.player2AI && this.currentPlayer == 2){
+        var move = this.ai2.getMove(this.board, -1, -1);
+         if(!this.gl){
+          //Perform click for AI only for SVG version
+          if(this.gameMode == 1){
+            var elem = document.getElementById("00" + move.innerX + "" + move.innerY);
+          }else if(this.gameMode == 2){
+            var elem = document.getElementById("" + move.outerX + "" + move.outerY + "" + move.innerX + "" + move.innerY);
+          }
+          elem.setAttributeNS(null, 'class', 'player' + this.currentPlayer);
+        }
+        this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY);
+      }
     };
 
     /*
@@ -156,6 +182,8 @@ function Game(gameMode, aiLevel, first, vsai){
         this.drawBoardAlt();
         return;
       }
+
+      this.setMouse();
 
       //Clear
       this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -467,14 +495,23 @@ function Game(gameMode, aiLevel, first, vsai){
           }
         }
       }else if(this.gameMode == 2){
+        console.log(this.boardsWon);
         if(this.board[outerX][outerY][innerX][innerY] != 0 || this.boardsWon[(outerX*3) + outerY] != 0 || (this.lastMove && (outerX != this.lastMove.innerX || outerY != this.lastMove.innerY))){ // Check for valid move
           if(!this.gl){
             //Reset puice 
             var elem = document.getElementById(outerX + "" + outerY + "" + innerX + "" + innerY);
             elem.setAttributeNS(null, 'class', 'piece');
           }
+          
           console.log(this.board[outerX][outerY][innerX][innerY]);
           console.log("invalid move!");
+          console.log(this.boardsWon);
+          console.log(outerX, outerY, innerX, innerY);
+
+          console.log(this.board[outerX][outerY][innerX][innerY] != 0 );
+          console.log(this.boardsWon[(outerX*3) + outerY] != 0);
+          console.log((this.lastMove && (outerX != this.lastMove.innerX || outerY != this.lastMove.innerY)));
+
           return;
         }
 
@@ -650,7 +687,7 @@ function Game(gameMode, aiLevel, first, vsai){
           return true;
         }
 
-        if(this.board[oX][oY][0][2] == this.board[oX][oY][1][2] && this.board[oX][oY][2][0] == this.board[oX][oY][2][2]){ // Right col
+        if(this.board[oX][oY][0][2] == this.board[oX][oY][1][2] && this.board[oX][oY][0][2] == this.board[oX][oY][2][2]){ // Right col
           return true;
         }
       }
@@ -703,7 +740,5 @@ function Game(gameMode, aiLevel, first, vsai){
 
     Game.prototype.endScene = function(){
     };
-
   }
-
 }
