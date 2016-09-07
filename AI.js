@@ -145,7 +145,7 @@ var AI = function(level, mode, player){
         }
       }else if(this.gameMode == 2){ // Ultimate mode
         //Checks if the inner board is won to determind moves.
-        if(this.singleWon(x, y)){
+        if((x == -1 || y == -1) || this.singleWon(x, y)){
           for(var i = 0; i < 3; i++){
             for(var j = 0; j < 3; j++){
               if(!this.singleWon(i,j)){ // If the board is already won, skip it
@@ -178,7 +178,7 @@ var AI = function(level, mode, player){
      */
     AI.prototype.singleWon = function(outerX, outerY){
       if(this.possibleBoard[outerX][outerY][0][0] != 0){
-          if(this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][0][1] && this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][0][2]){ // Left col
+          if(this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][1][0] && this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][2][0]){ // Left col
             return true;
           }
 
@@ -186,17 +186,17 @@ var AI = function(level, mode, player){
             return true;
           }
 
-          if(this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][1][0] && this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][2][0]){ // Top row
+          if(this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][0][1] && this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][0][2]){ // Top row
             return true;
           }
       }
 
-      if(this.possibleBoard[outerX][outerY][2][0] != 0){
-        if(this.possibleBoard[outerX][outerY][2][0] == this.possibleBoard[outerX][outerY][1][1] && this.possibleBoard[outerX][outerY][2][0] == this.possibleBoard[outerX][outerY][0][2]){ // Right diag
+      if(this.possibleBoard[outerX][outerY][0][2] != 0){
+        if(this.possibleBoard[outerX][outerY][0][2] == this.possibleBoard[outerX][outerY][1][1] && this.possibleBoard[outerX][outerY][0][2] == this.possibleBoard[outerX][outerY][2][0]){ // Right diag
           return true;
         }
 
-        if(this.possibleBoard[outerX][outerY][2][0] == this.possibleBoard[outerX][outerY][2][1] && this.possibleBoard[outerX][outerY][2][0] == this.possibleBoard[outerX][outerY][2][2]){ // Right col=
+        if(this.possibleBoard[outerX][outerY][0][2] == this.possibleBoard[outerX][outerY][1][2] && this.possibleBoard[outerX][outerY][0][2] == this.possibleBoard[outerX][outerY][2][2]){ // Right col=
           return true;
         }
       }
@@ -208,10 +208,10 @@ var AI = function(level, mode, player){
 
         if(this.possibleBoard[outerX][outerY][2][1] == this.possibleBoard[outerX][outerY][2][0] && this.possibleBoard[outerX][outerY][2][1] == this.possibleBoard[outerX][outerY][2][2]){ // Bottom row
           return true;
-        }
+        } 
       }
 
-      if(this.possibleBoard[outerX][outerY][0][1] != 0 && this.possibleBoard[outerX][outerY][0][1] == this.possibleBoard[outerX][outerY][1][1] && this.possibleBoard[outerX][outerY][0][1] == this.possibleBoard[outerX][outerY][1][2]){ // Middle row
+      if(this.possibleBoard[outerX][outerY][0][1] != 0 && this.possibleBoard[outerX][outerY][0][1] == this.possibleBoard[outerX][outerY][1][1] && this.possibleBoard[outerX][outerY][0][1] == this.possibleBoard[outerX][outerY][2][1]){ // Middle row
         return true;
       }
 
@@ -231,8 +231,22 @@ var AI = function(level, mode, player){
 
         return 0;
       }else if(this.gameMode == 2){ // Ultimate mode
-        var score = 0;
+        if(this.gameWonBy(this.aiPlayer)){
+          return 100000;
+        }else if(this.gameWonBy(this.aiOpponent)){
+          return -100000;
+        }
 
+        var score = 0;
+        var boardWins = [0,0,0,0,0,0,0,0];
+        for(var i = 0; i < 3; i++){
+          for(var j = 0; j < 3; j++){
+            //Check for board wins
+            if(this.singleWon(i,j)){
+              
+            }
+          }
+        }
 
         return score;
       }
