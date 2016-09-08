@@ -495,7 +495,6 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
           }
         }
       }else if(this.gameMode == 2){
-        console.log(this.boardsWon);
         if(this.board[outerX][outerY][innerX][innerY] != 0 || this.boardsWon[(outerX*3) + outerY] != 0 || (this.lastMove && (outerX != this.lastMove.innerX || outerY != this.lastMove.innerY))){ // Check for valid move
           if(!this.gl){
             //Reset puice 
@@ -503,14 +502,14 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
             elem.setAttributeNS(null, 'class', 'piece');
           }
           
-          console.log(this.board[outerX][outerY][innerX][innerY]);
           console.log("invalid move!");
-          console.log(this.boardsWon);
-          console.log(outerX, outerY, innerX, innerY);
+          // console.log(this.boardsWon);
+          // console.log(outerX, outerY, innerX, innerY);
+          // console.log(this.lastMove);
 
-          console.log(this.board[outerX][outerY][innerX][innerY] != 0 );
-          console.log(this.boardsWon[(outerX*3) + outerY] != 0);
-          console.log((this.lastMove && (outerX != this.lastMove.innerX || outerY != this.lastMove.innerY)));
+          // console.log(this.board[outerX][outerY][innerX][innerY] != 0 );
+          // console.log(this.boardsWon[(outerX*3) + outerY] != 0);
+          // console.log((this.lastMove && (outerX != this.lastMove.innerX || outerY != this.lastMove.innerY)));
 
           return;
         }
@@ -519,7 +518,13 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
         //Check if the single board is now won
         if(this.boardWon(outerX, outerY)){
           this.boardsWon[(outerX*3) + outerY] = this.currentPlayer;
+          console.log(this.numOfMoves);
           console.log("Single board won.");
+          console.log(this.boardsWon);
+        }
+        //Check to see if the board is tied
+        if(this.boardTied(outerX, outerY)){
+          this.boardsWon[outerX*3 + outerY] = -1;
           console.log(this.boardsWon);
         }
 
@@ -532,9 +537,13 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
           return;
         }
 
-        if(this.boardWon(innerX, innerY)){ // Check if the last
+        //Check if next play gets to play anywhere.
+        if(this.boardsWon[(innerX*3) + innerY] != 0){ 
           this.lastMove = null;
+          innerX = -1; 
+          innerY = -1;
         }else{
+          console.log(innerX*3 + innerY);
           this.lastMove = {outerX: outerX, outerY: outerY, innerX: innerX, innerY: innerY};
         }
 
@@ -573,9 +582,6 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
      */
     Game.prototype.gameOver = function(){
       //Check for tie
-      if(this.gameTied()){
-        return true;
-      }
       if(this.gameMode == 1){ // Normal mode
         if(this.board[0][0] != 0){
           if(this.board[0][0] == this.board[1][0] && this.board[0][0] == this.board[2][0]){ // Left col
@@ -615,14 +621,11 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
           return true;
         }
 
-        //Check for ties
-        for(var i = 0; i < 3; i++){
-          for(var j = 0; j < 3; j++){
-          }
-        }
+        //Only a tie stops the game
+        return this.gameTied();
 
-        return false;
       }else if(this.gameMode == 2){ // Ultimate mode
+        //Condition for a win
         if(this.boardsWon[0] != 0){
           if(this.boardsWon[0] == this.boardsWon[3] && this.boardsWon[0] == this.boardsWon[6]){ // Left col
             return true;
@@ -660,7 +663,9 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
         if(this.boardsWon[3] != 0 && this.boardsWon[3] == this.boardsWon[4] && this.boardsWon[3] == this.boardsWon[5]){ // Middle row
           return true;
         }
-        return false;
+
+        //Only a tie stops the game
+        return this.gameTied();
       }
     };
 
@@ -669,7 +674,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
      */
     Game.prototype.boardWon = function(oX, oY){
       if(this.board[oX][oY][0][0] != 0){
-          if(this.board[oX][oY][0][0] == this.board[oX][oY][0][1] && this.board[oX][oY][0][0] == this.board[oX][oY][0][2]){ // Left col
+          if(this.board[oX][oY][0][0] == this.board[oX][oY][1][0] && this.board[oX][oY][0][0] == this.board[oX][oY][2][0]){ // Left col
             return true;
           }
 
@@ -677,7 +682,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
             return true;
           }
 
-          if(this.board[oX][oY][0][0] == this.board[oX][oY][1][0] && this.board[oX][oY][0][0] == this.board[oX][oY][2][0]){ // Top row
+          if(this.board[oX][oY][0][0] == this.board[oX][oY][0][1] && this.board[oX][oY][0][0] == this.board[oX][oY][0][2]){ // Top row
             return true;
           }
       }
@@ -693,7 +698,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       }
 
       if(this.board[oX][oY][2][1] != 0){
-        if(this.board[oX][oY][2][1] == this.board[oX][oY][1][1] && this.board[oX][oY][2][1] == this.board[oX][oY][1][0]){ // Middle col
+        if(this.board[oX][oY][2][1] == this.board[oX][oY][1][1] && this.board[oX][oY][2][1] == this.board[oX][oY][0][1]){ // Middle col
           return true;
         }
 
@@ -702,12 +707,25 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
         }
       }
 
-      if(this.board[oX][oY][1][0] != 0 && this.board[oX][oY][1][0] == this.board[oX][oY][1][1] && this.board[oX][oY][0][1] == this.board[oX][oY][1][2]){ // Middle row
+      if(this.board[oX][oY][1][0] != 0 && this.board[oX][oY][1][0] == this.board[oX][oY][1][1] && this.board[oX][oY][1][0] == this.board[oX][oY][1][2]){ // Middle row
         return true;
       }
       return false;
     }
-
+    
+    /* ! Ultimate mode only
+     *
+     */
+    Game.prototype.boardTied = function(outerX, outerY){
+      for(var i = 0; i < 3; i++){
+        for(var j = 0; j < 3; j++){
+          if(this.board[outerX][outerY][i][j] == 0){
+            return false;
+          }
+        }
+      }
+      return true;
+    };
     /*
      * Checks for ties by looking for any piece that isn't claimed
      */
@@ -719,21 +737,26 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
               return false;
             }
           }
-       }
+        }
        return true;
       }else if(this.gameMode == 2){
-        for(var i = 0; i < 3; i++){
-          for(var j = 0; j < 3; j++){
-            for(var k = 0; k < 3; k++){
-              for(var l = 0; l < 3; l++){
-                if(this.board[i][j][k][l] == 0){
-                  return false;
-                }
+        if(this.numOfMoves > 26){// Tie when no more playable moves
+          for(var i = 0; i < 3; i++){
+            for(var j = 0; j < 3; j++){
+              if(this.boardsWon[(i*3) + j] == 0){
+                console.log(i,j);
+                return false;
               }
             }
           }
-        }
 
+          //Last check to be done, so don't worry about winning in the last move
+          if(this.numOfMoves == 81){
+            return true;
+          }
+        }else{ // Not possible to have a tied less than 27 moves
+          return false;
+        }
         return true;
       }
     };
