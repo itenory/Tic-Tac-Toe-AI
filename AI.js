@@ -3,8 +3,15 @@ var AI = function(level, mode, player){
   this.gameMode = mode;
   this.aiPlayer = player;
   this.aiOpponent = (player%2) + 1;
-  if(mode == 2){ //Ultimate mode, keep track of boards won
 
+  if(this.aiLevel == 1){
+    this.depthBound = 2;
+
+  }else if(this.aiLevel == 2){
+    this.depthBound = 4;
+
+  }else if(this.aiLevel == 3){
+    this.depthBound = 8;
   }
 
   if(typeof this.getMove != "function"){
@@ -19,15 +26,6 @@ var AI = function(level, mode, player){
     AI.prototype.getMove = function(currentBoard, x, y){
       this.possibleBoard = currentBoard;
 
-      if(this.aiLevel == 1){
-        this.depthBound = 2;
-
-      }else if(this.aiLevel == 2){
-        this.depthBound = 4;
-
-      }else if(this.aiLevel == 3){
-        this.depthBound = 8;
-      }
       console.log("Finding AI's move.");
       var nextMove = this.minmaxSearch(this.aiPlayer, 0, x, y);
       console.log("Move found: ");
@@ -57,13 +55,13 @@ var AI = function(level, mode, player){
 
       var bestMove;
       var bestScore;
-      if(possibleMoves.length == 0){
+      if(possibleMoves.length == 0){       
         return this.evaluation(depth);
       }
 
       // Conduct search
       if(player == this.aiPlayer){ // Max AI Player's move
-        bestScore = -100000;
+        bestScore = -1000000;
 
         for(var i = 0; i < possibleMoves.length; i++){
           this.setMove(possibleMoves[i], player);
@@ -77,7 +75,7 @@ var AI = function(level, mode, player){
           this.setMove(possibleMoves[i], 0);
         }
       }else{ // Min Opponent's move
-        bestScore = 100000;
+        bestScore = 1000000;
 
         for(var j = 0; j < possibleMoves.length; j++){
           this.setMove(possibleMoves[j], player);
@@ -172,6 +170,18 @@ var AI = function(level, mode, player){
 
       return moves;
     };
+    
+    AI.prototype.boardTied = function(outerX, outerY){
+      for(var i = 0; i < 3; i++){
+        for(var j = 0; j < 3; j++){
+          if(this.possibleBoard[outerX][outerY][i][j] == 0){
+            return false;
+          }
+        }
+      }
+
+      return true;
+    };
 
     /* ! Use for ultimate mode only !
      * Checks if a inner board is won
@@ -211,12 +221,61 @@ var AI = function(level, mode, player){
         } 
       }
 
-      if(this.possibleBoard[outerX][outerY][0][1] != 0 && this.possibleBoard[outerX][outerY][0][1] == this.possibleBoard[outerX][outerY][1][1] && this.possibleBoard[outerX][outerY][0][1] == this.possibleBoard[outerX][outerY][2][1]){ // Middle row
+      if(this.possibleBoard[outerX][outerY][1][0] != 0 && this.possibleBoard[outerX][outerY][1][0] == this.possibleBoard[outerX][outerY][1][1] && this.possibleBoard[outerX][outerY][1][0] == this.possibleBoard[outerX][outerY][1][2]){ // Middle row
+        return true;
+      }
+
+      if(this.boardTied(outerX, outerY)){
         return true;
       }
 
       return false;
     };
+
+    /* ! Use for ultimate mode only !
+     * 
+     */
+    AI.prototype.singleWonBy = function(outerX, outerY){
+      if(this.possibleBoard[outerX][outerY][0][0] != 0){
+          if(this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][1][0] && this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][2][0]){ // Left col
+            return this.possibleBoard[outerX][outerY][0][0] ;
+          }
+
+          if(this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][1][1] && this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][2][2]){ //Left Diag
+            return this.possibleBoard[outerX][outerY][0][0] ;
+          }
+
+          if(this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][0][1] && this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][0][2]){ // Top row
+            return this.possibleBoard[outerX][outerY][0][0] ;
+          }
+      }
+
+      if(this.possibleBoard[outerX][outerY][0][2] != 0){
+        if(this.possibleBoard[outerX][outerY][0][2] == this.possibleBoard[outerX][outerY][1][1] && this.possibleBoard[outerX][outerY][0][2] == this.possibleBoard[outerX][outerY][2][0]){ // Right diag
+          return this.possibleBoard[outerX][outerY][0][2];
+        }
+
+        if(this.possibleBoard[outerX][outerY][0][2] == this.possibleBoard[outerX][outerY][1][2] && this.possibleBoard[outerX][outerY][0][2] == this.possibleBoard[outerX][outerY][2][2]){ // Right col=
+          return this.possibleBoard[outerX][outerY][0][2];
+        }
+      }
+
+      if(this.possibleBoard[outerX][outerY][2][1] != 0){
+        if(this.possibleBoard[outerX][outerY][2][1] == this.possibleBoard[outerX][outerY][1][1] && this.possibleBoard[outerX][outerY][2][1] == this.possibleBoard[outerX][outerY][0][1]){ // Middle col
+          return this.possibleBoard[outerX][outerY][2][1];
+        }
+
+        if(this.possibleBoard[outerX][outerY][2][1] == this.possibleBoard[outerX][outerY][2][0] && this.possibleBoard[outerX][outerY][2][1] == this.possibleBoard[outerX][outerY][2][2]){ // Bottom row
+          return this.possibleBoard[outerX][outerY][2][1];
+        } 
+      }
+
+      if(this.possibleBoard[outerX][outerY][1][0] != 0 && this.possibleBoard[outerX][outerY][1][0] == this.possibleBoard[outerX][outerY][1][1] && this.possibleBoard[outerX][outerY][1][0] == this.possibleBoard[outerX][outerY][1][2]){ // Middle row
+        return this.possibleBoard[outerX][outerY][1][0];
+      }
+
+      return 0;
+     };
 
     /*
      * Evaluation function for min max search. Checks for game mode.
@@ -242,9 +301,16 @@ var AI = function(level, mode, player){
         for(var i = 0; i < 3; i++){
           for(var j = 0; j < 3; j++){
             //Check for board wins
-            if(this.singleWon(i,j)){
-              
+            var winner = this.singleWonBy(i,j);
+            if(winner == this.aiPlayer){
+              boardWins[i*3 + j] = this.aiPlayer;
+              score += 10;
+            }else if(winner == this.aiOpponent){
+              boardWins[i*3 + j] = this.aiOpponent;
+              score -= 10;
             }
+
+            //Check for board 
           }
         }
 
@@ -258,7 +324,7 @@ var AI = function(level, mode, player){
     AI.prototype.gameWonBy = function(player){
       if(this.gameMode == 1){
         if(this.possibleBoard[0][0] == player){
-          if(this.possibleBoard[0][1] == player && this.possibleBoard[0][2] == player){ // Left col
+          if(this.possibleBoard[1][0] == player && this.possibleBoard[2][0] == player){ // Left col
             return true;
           }
 
@@ -266,37 +332,93 @@ var AI = function(level, mode, player){
             return true;
           }
 
-          if(this.possibleBoard[1][0] == player && this.possibleBoard[2][0] == player){ // Top row
+          if(this.possibleBoard[0][1] == player && this.possibleBoard[0][2] == player){ // Top row
             return true;
           }
         }
 
-        if(this.possibleBoard[2][0] == player){
-          if(this.possibleBoard[1][1] == player && this.possibleBoard[0][2] == player){ // Right diag
+        if(this.possibleBoard[0][2] == player){
+          if(this.possibleBoard[1][1] == player && this.possibleBoard[2][0] == player){ // Right diag
             return true;
           }
 
-          if(this.possibleBoard[2][1] == player && this.possibleBoard[2][2] == player){ // Right col=
-            return true;
-          }
-        }
-
-        if(this.possibleBoard[1][2] == player){
-          if(this.possibleBoard[1][1] == player && this.possibleBoard[1][0] == player){ // Middle col
-            return true;
-          }
-
-          if(this.possibleBoard[0][2] == player && this.possibleBoard[2][2] == player){ // Bottom row
+          if(this.possibleBoard[1][2] == player && this.possibleBoard[2][2] == player){ // Right col=
             return true;
           }
         }
 
-        if(this.possibleBoard[0][1] == player && this.possibleBoard[1][1] == player && this.possibleBoard[1][2] == player){ // Middle row
+        if(this.possibleBoard[2][1] == player){
+          if(this.possibleBoard[1][1] == player && this.possibleBoard[0][1] == player){ // Middle col
+            return true;
+          }
+
+          if(this.possibleBoard[2][0] == player && this.possibleBoard[2][2] == player){ // Bottom row
+            return true;
+          }
+        }
+
+        if(this.possibleBoard[1][0] == player && this.possibleBoard[1][1] == player && this.possibleBoard[1][2] == player){ // Middle row
           return true;
         }
 
         return false;
       }else if(this.gameMode == 2){
+
+        var boardWins = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        var tieCounter = 0;
+
+        for(var i = 0; i < 3; i++){
+          for(var j = 0; j < 3; j++){
+            var winner = this.singleWonBy(i,j);
+            if(winner == this.aiPlayer){
+              boardWins[i*3 + j] = this.aiPlayer;
+              tieCounter++;
+            }else if(winner == this.aiOpponent){
+              boardWins[i*3 + j] = this.aiOpponent;
+              tieCounter++;
+            }else if(this.boardTied(i,j)){ //Check for tie
+              boardWins[i*3 + j] = -1;
+              tieCounter++;
+            }
+          }
+        }
+
+        //Check all possible winning game positions
+        if(boardWins[0] == player && boardWins[3] == player && boardWins[6] == player){ // Left col
+          return true;
+        }
+
+        if(boardWins[1] == player && boardWins[4] == player && boardWins[7] == player){ // Mid col
+          return true;
+        }
+        
+        if(boardWins[2] == player && boardWins[5] == player && boardWins[8] == player){ // Right col
+          return true;
+        }
+
+        if(boardWins[0] == player && boardWins[1] == player && boardWins[2] == player){ // Top row
+          return true;
+        }
+        
+        if(boardWins[3] == player && boardWins[4] == player && boardWins[5] == player){ // Mid row
+          return true;
+        }
+        
+        if(boardWins[6] == player && boardWins[7] == player && boardWins[8] == player){ // Bot row
+          return true;
+        }
+        
+        if(boardWins[0] == player && boardWins[4] == player && boardWins[8] == player){ // Left Diag
+          return true;
+        }
+        
+        if(boardWins[2] == player && boardWins[4] == player && boardWins[6] == player){ // Right Diag
+          return true;
+        }
+
+        if(tieCounter == 9){
+          return true;
+        }
 
         return false;
       }
