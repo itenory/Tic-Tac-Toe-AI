@@ -48,7 +48,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
           }
           elem.setAttributeNS(null, 'class', 'player' + this.currentPlayer);
         }
-        this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY) 
+        this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY)
       }else if(this.player2AI && this.currentPlayer == 2){
         var move = this.ai2.getMove(this.board, -1, -1);
          if(!this.gl){
@@ -374,7 +374,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
 
     /*
      * Draws a single board using SVGs. Used for ultimate to draw multiple boards
-     * 
+     *
      */
     Game.prototype.drawSingle = function(boardElem, height, width, x, y, spacing, id){
       var svgns = "http://www.w3.org/2000/svg";
@@ -388,7 +388,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       boardElem.appendChild(rect);
 
       var mouseDown = function(game, piece){
-        var id = piece.getAttributeNS(null, 'id'); 
+        var id = piece.getAttributeNS(null, 'id');
         if(piece.getAttributeNS(null, 'class').includes('piece')){
           piece.setAttributeNS(null, 'class', "player" + game.currentPlayer);
           game.setPieceToPlayer(parseInt(id.charAt(0)), parseInt(id.charAt(1)), parseInt(id.charAt(2)), parseInt(id.charAt(3)));
@@ -497,11 +497,11 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       }else if(this.gameMode == 2){
         if(this.board[outerX][outerY][innerX][innerY] != 0 || this.boardsWon[(outerX*3) + outerY] != 0 || (this.lastMove && (outerX != this.lastMove.innerX || outerY != this.lastMove.innerY))){ // Check for valid move
           if(!this.gl){
-            //Reset puice 
+            //Reset puice
             var elem = document.getElementById(outerX + "" + outerY + "" + innerX + "" + innerY);
             elem.setAttributeNS(null, 'class', 'piece');
           }
-          
+
           console.log("invalid move!");
           // console.log(this.boardsWon);
           // console.log(outerX, outerY, innerX, innerY);
@@ -538,9 +538,9 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
         }
 
         //Check if next play gets to play anywhere.
-        if(this.boardsWon[(innerX*3) + innerY] != 0){ 
+        if(this.boardsWon[(innerX*3) + innerY] != 0){
           this.lastMove = null;
-          innerX = -1; 
+          innerX = -1;
           innerY = -1;
         }else{
           console.log(innerX*3 + innerY);
@@ -712,9 +712,12 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       }
       return false;
     }
-    
+
     /* ! Ultimate mode only
-     *
+     *  Checks if a single board is tied by looking for at least 1 possible move
+     * outerX The x position of the board
+     * outerY The y position of the board
+     * return Returns true if theres a possible move, false otherwise
      */
     Game.prototype.boardTied = function(outerX, outerY){
       for(var i = 0; i < 3; i++){
@@ -726,8 +729,10 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       }
       return true;
     };
+
     /*
-     * Checks for ties by looking for any piece that isn't claimed
+     * Checks for ties by looking for any piece that isn't claimed.
+     *  Works for all game modes
      */
     Game.prototype.gameTied = function(){
       if(this.gameMode == 1){
@@ -761,7 +766,11 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       }
     };
 
+    /*
+     * Shows winner of the game or tied using SVG or WebGL
+     */
     Game.prototype.endScene = function(){
+
     };
   }
 }
