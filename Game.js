@@ -34,7 +34,6 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
 
       this.setbackEnd();
       this.drawBoard();
-      console.log(0);
 
       //If AI goes first, get and set their move. Redraw board
       if(this.player1AI && this.currentPlayer == 1){
@@ -101,9 +100,6 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       var xPos = canvas.offsetLeft - canvas.scrollLeft + canvas.clientLeft;
       var yPos = canvas.offsetTop - canvas.scrollTop + canvas.clientTop;
 
-      console.log(xPos);
-      console.log(yPos);
-
       var mouseDown = function(game, event){
         if(game.gameDone){
           return;
@@ -131,8 +127,6 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
           console.log(oX, oY, iX, iY);
           game.setPieceToPlayer(oX, oY, iX, iY);
         }
-        // console.log(event.pageX - xPos);
-        // console.log(event.pageY - yPos);
       };
 
       canvas.addEventListener("mousedown",
@@ -248,7 +242,6 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
         }
         numOfSquares = 9;
       }else if(this.gameMode == 2){
-        console.log("here");
         for(var i = 0; i < 3; i++){
           for(var j = 0; j < 3; j++){
             for(var k = 0; k < 3; k++){
@@ -411,7 +404,6 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
 
           //Add event listener for clicks
           shape.addEventListener('click', function(game, elem){
-            // console.log(elem);
             return function(event){
               mouseDown(game, elem);
             }
@@ -503,27 +495,16 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
           }
 
           console.log("invalid move!");
-          // console.log(this.boardsWon);
-          // console.log(outerX, outerY, innerX, innerY);
-          // console.log(this.lastMove);
-
-          // console.log(this.board[outerX][outerY][innerX][innerY] != 0 );
-          // console.log(this.boardsWon[(outerX*3) + outerY] != 0);
-          // console.log((this.lastMove && (outerX != this.lastMove.innerX || outerY != this.lastMove.innerY)));
-
           return;
         }
 
         this.board[outerX][outerY][innerX][innerY] = this.currentPlayer;
-        //Check if the single board is now won
+        //If single is won, mark it currentPlayer, if tied, mark it -1
         if(this.boardWon(outerX, outerY)){
           this.boardsWon[(outerX*3) + outerY] = this.currentPlayer;
-          console.log(this.numOfMoves);
           console.log("Single board won.");
           console.log(this.boardsWon);
-        }
-        //Check to see if the board is tied
-        if(this.boardTied(outerX, outerY)){
+        }else if(this.boardTied(outerX, outerY)){
           this.boardsWon[outerX*3 + outerY] = -1;
           console.log(this.boardsWon);
         }
@@ -768,9 +749,42 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
 
     /*
      * Shows winner of the game or tied using SVG or WebGL
+     * SVG draws a box over the game board
+     * WebGL, draws a line through the winning position
      */
     Game.prototype.endScene = function(){
+      if(this.gl){ // WebGL
 
+      }else{ // SVG, just display a rect over the board that say who won
+        var boardSVG = document.getElementById("gameboard");
+        var svgns = "http://www.w3.org/2000/svg";
+        var text = document.createElementNS(svgns, "text");
+        var rect = document.createElementNS(svgns, "rect");
+
+        //Possition for background and text
+        rect.setAttribute("x", 15);
+        rect.setAttribute("y", 15);
+        rect.setAttribute("width", 570);
+        rect.setAttribute("height", 570);
+        text.setAttribute("x", 0);
+        text.setAttribute("y", 20);
+        text.setAttribute("font-size", 64);
+
+        //Set text
+        if(this.gameTied()){
+          text.setAttribute("class", "Tied");
+          text.innerHTML = "GAME OVER <br> Tie";
+        }else{
+          rect.setAttribute("class", "background-winner" + this.currentPlayer);
+          text.setAttribute("class", "winner" + this.currentPlayer);
+          var str = "winner" + "<br>" + "te";
+          text.innerHTML = "Winner" + "<br>" + "Player " + this.currentPlayer;
+        }
+
+        boardSVG.appendChild(rect);
+        boardSVG.appendChild(text);
+
+      }
     };
   }
 }
