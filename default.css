@@ -14,3 +14,22 @@ body{
 .player2{
   fill: blue;
 }
+
+.winner1{
+  fill: white;
+}
+
+.winner2{
+  fill: white;
+
+}
+
+.background-winner1{
+  fill: red;
+  fill-opacity: 0.7;
+}
+
+.background-winner2{
+  fill: blue;
+  fill-opacity: .5;
+}
