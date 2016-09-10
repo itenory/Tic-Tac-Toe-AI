@@ -22,6 +22,7 @@ var AI = function(level, mode, player){
      * currentBoard The current board in the gameMode
      * x Last move innerX
      * y Last move innerY
+     * return Returns a object {innerX, innerY, outerX, outerY} for the move 
      */
     AI.prototype.getMove = function(currentBoard, x, y){
       this.possibleBoard = currentBoard;
@@ -52,10 +53,9 @@ var AI = function(level, mode, player){
       }
 
       var possibleMoves = this.getPossibleMoves(x, y);
-
       var bestMove;
       var bestScore;
-      if(possibleMoves.length == 0){       
+      if(possibleMoves.length == 0){      
         return this.evaluation(depth);
       }
 
@@ -123,7 +123,9 @@ var AI = function(level, mode, player){
     /*
      * Gets all possible moves for either game mode.
      *  Ultimate mode uses last move to determind where the player can go.
-     * lastMove The last move made on the board.
+     * x The innerX of the last move. (Needed for ultimate mode) 
+     * y The innerY of the last move. (Needed for ultimate mode)
+     * return Returns a array of object where each objects 
      */
     AI.prototype.getPossibleMoves = function(x, y){
       //Check if game is over
@@ -143,10 +145,10 @@ var AI = function(level, mode, player){
         }
       }else if(this.gameMode == 2){ // Ultimate mode
         //Checks if the inner board is won to determind moves.
-        if((x == -1 || y == -1) || this.singleWon(x, y)){
+        if((x == -1 || y == -1) || this.singleUnplayable(x, y)){
           for(var i = 0; i < 3; i++){
             for(var j = 0; j < 3; j++){
-              if(!this.singleWon(i,j)){ // If the board is already won, skip it
+              if(!this.singleUnplayable(i,j)){ // If the board is already won, skip it
                 for(var k = 0; k < 3; k++){
                   for(var l = 0; l < 3; l++){
                     if(this.possibleBoard[i][j][k][l] == 0){
@@ -170,7 +172,13 @@ var AI = function(level, mode, player){
 
       return moves;
     };
-    
+
+    /*
+     * Checks if single board is tied by looking for the array has a 0 (playable piece)
+     * outerX outerX position of the board to check
+     * outerY outerY position of the board to check
+     * return Returns true if board is tied, false otherwise 
+     */
     AI.prototype.boardTied = function(outerX, outerY){
       for(var i = 0; i < 3; i++){
         for(var j = 0; j < 3; j++){
@@ -184,9 +192,12 @@ var AI = function(level, mode, player){
     };
 
     /* ! Use for ultimate mode only !
-     * Checks if a inner board is won
+     * Checks if a single board is won or tied
+     * outerX The X of the board to check
+     * outerY The Y of the board to check
+     * return Returns true if board is won, false otherwise.
      */
-    AI.prototype.singleWon = function(outerX, outerY){
+    AI.prototype.singleUnplayable = function(outerX, outerY){
       if(this.possibleBoard[outerX][outerY][0][0] != 0){
           if(this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][1][0] && this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][2][0]){ // Left col
             return true;
@@ -278,7 +289,9 @@ var AI = function(level, mode, player){
      };
 
     /*
-     * Evaluation function for min max search. Checks for game mode.
+     * Evaluation function for min max search.
+     *  Evaluation methods depend on game mode
+     * return Returns the evaluation score for the current possible board
      */
     AI.prototype.evaluation = function(depth){
       if(this.gameMode == 1){ // Normal mode
@@ -319,7 +332,10 @@ var AI = function(level, mode, player){
     };
 
     /*
-     * Checks if the game is won by the player.
+     * Checks if the game is won by the player
+     *  Works for all modes
+     * player The player to check for a win
+     * return Returns true if the game is won, false otherwise
      */
     AI.prototype.gameWonBy = function(player){
       if(this.gameMode == 1){
