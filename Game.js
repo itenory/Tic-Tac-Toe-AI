@@ -137,7 +137,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
     };
 
     /*
-     *
+     * Draws the game board using WebGL 
      */
     Game.prototype.drawBoard = function(){
       console.log("Drawing board");
@@ -560,6 +560,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
 
     /*
      * Checks if game is over for all modes by looking for wins and ties.
+     * return Returns the true if the game is over, false otherwise
      */
     Game.prototype.gameOver = function(){
       //Check for tie
@@ -650,8 +651,11 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       }
     };
 
-    /*
+    /* ! ULTIMATE VERSION ONLY !
      * Checks if a single board for ultimate verison is won
+     * oX The x of the board to check
+     * oY The y of the board to check
+     * return Returns true if a single board is won
      */
     Game.prototype.boardWon = function(oX, oY){
       if(this.board[oX][oY][0][0] != 0){
@@ -714,6 +718,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
     /*
      * Checks for ties by looking for any piece that isn't claimed.
      *  Works for all game modes
+     * return Returns true if the game is tied, false otherwise
      */
     Game.prototype.gameTied = function(){
       if(this.gameMode == 1){
