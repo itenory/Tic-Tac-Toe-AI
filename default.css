@@ -3,6 +3,10 @@ body{
   color: white;
 }
 
+#game{
+  text-align: center;
+}
+
 .piece{
   fill: white;
 }
