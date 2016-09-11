@@ -35,6 +35,13 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       this.setbackEnd();
       this.drawBoard();
 
+      var title = document.getElementById("header");
+
+      if(this.gameMode == 1){
+        title.innerHTML = "Tic Tac Toe";
+      }else{
+        title.innerHTML = "Ultimate Tic Tac Toe"
+      }
       //If AI goes first, get and set their move. Redraw board
       if(this.player1AI && this.currentPlayer == 1){
         var move = this.ai1.getMove(this.board, -1, -1);
@@ -169,7 +176,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       //Try first with webgl, if it doesn't work than use svgs
       var canvas = document.getElementById("gameboard");
       this.gl = canvas.getContext("experimental-webgl");
-      this.gl = null;
+      //this.gl = null;
 
       if(!this.gl){
         alert("ERROR This browser does not support WebGL, using an altinate method.");
