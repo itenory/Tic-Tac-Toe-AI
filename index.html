@@ -61,7 +61,7 @@
   <body>
 
     <div id="menu">
-      <p>Menu</p>
+    
       <div class="group">
         <span>What difficulty?</span>
         <input type="radio" name="difficulty" value="1" checked />Easy
@@ -92,13 +92,14 @@
       <button onclick="setUpGame()">Start Game</button>
     </div>
 
-    <div id="game">
-      <canvas id="gameboard" height="600" width="600">
+    <div id="game" >
+      <div id="header">
 
+      </div>
+      <br>
+      <canvas id="gameboard" height="600" width="600">
       </canvas>
-      <p>
-        Bottom
-      </p>
+
     </div>
 
   </body>
