@@ -176,10 +176,10 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       //Try first with webgl, if it doesn't work than use svgs
       var canvas = document.getElementById("gameboard");
       this.gl = canvas.getContext("experimental-webgl");
-      //this.gl = null;
+      this.gl = null;
 
       if(!this.gl){
-        alert("ERROR This browser does not support WebGL, using an altinate method.");
+        alert("ERROR This browser does not support WebGL, using an alternate method.");
         this.drawBoardAlt();
         return;
       }
@@ -522,6 +522,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
           }
           this.gameDone = true;
           console.log("Game Over. Player "+ this.currentPlayer + " wins!");
+          this.endScene();
           return;
         }
 
@@ -771,30 +772,42 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
         var boardSVG = document.getElementById("gameboard");
         var svgns = "http://www.w3.org/2000/svg";
         var text = document.createElementNS(svgns, "text");
+        var text2 = document.createElementNS(svgns, "text");
         var rect = document.createElementNS(svgns, "rect");
 
-        //Possition for background and text
+        //Position for background and text
         rect.setAttribute("x", 15);
         rect.setAttribute("y", 15);
         rect.setAttribute("width", 570);
         rect.setAttribute("height", 570);
-        text.setAttribute("x", 0);
-        text.setAttribute("y", 20);
+
+        text.setAttribute("x", 300);
+        text.setAttribute("y", 250);
         text.setAttribute("font-size", 64);
+        text.setAttribute("text-anchor", "middle");
+
+        text2.setAttribute("x", 300);
+        text2.setAttribute("y", 350);
+        text2.setAttribute("font-size", 64);
+        text2.setAttribute("text-anchor", "middle");
 
         //Set text
+        text.innerHTML = "Game Over";
         if(this.gameTied()){
-          text.setAttribute("class", "Tied");
-          text.innerHTML = "GAME OVER <br> Tie";
+          text.setAttribute("class", "tie");
+          text2.setAttribute("class", "tie");
+          text2.innerHTML = "Tie";
+          rect.setAttribute("class", "background-tie");
         }else{
           rect.setAttribute("class", "background-winner" + this.currentPlayer);
           text.setAttribute("class", "winner" + this.currentPlayer);
-          var str = "winner" + "<br>" + "te";
-          text.innerHTML = "Winner" + "<br>" + "Player " + this.currentPlayer;
+          text2.setAttribute("class", "winner" + this.currentPlayer);
+          text2.innerHTML = "Winner: Player " + this.currentPlayer;
         }
 
         boardSVG.appendChild(rect);
         boardSVG.appendChild(text);
+        boardSVG.appendChild(text2);
 
       }
     };
