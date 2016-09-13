@@ -176,7 +176,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       //Try first with webgl, if it doesn't work than use svgs
       var canvas = document.getElementById("gameboard");
       this.gl = canvas.getContext("experimental-webgl");
-      this.gl = null;
+      //this.gl = null; //For Debugging SVG Mode
 
       if(!this.gl){
         alert("ERROR This browser does not support WebGL, using an alternate method.");
@@ -494,6 +494,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
           }
         }
       }else if(this.gameMode == 2){
+        //Check for invalid move
         if(this.board[outerX][outerY][innerX][innerY] != 0 || this.boardsWon[(outerX*3) + outerY] != 0 || (this.lastMove && (outerX != this.lastMove.innerX || outerY != this.lastMove.innerY))){ // Check for valid move
           if(!this.gl){
             //Reset puice
@@ -506,6 +507,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
         }
 
         this.board[outerX][outerY][innerX][innerY] = this.currentPlayer;
+
         //If single is won, mark it currentPlayer, if tied, mark it -1
         if(this.boardWon(outerX, outerY)){
           this.boardsWon[(outerX*3) + outerY] = this.currentPlayer;
@@ -613,47 +615,10 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
 
         //Only a tie stops the game
         return this.gameTied();
-
       }else if(this.gameMode == 2){ // Ultimate mode
-        //Condition for a win
-        if(this.boardsWon[0] != 0){
-          if(this.boardsWon[0] == this.boardsWon[3] && this.boardsWon[0] == this.boardsWon[6]){ // Left col
-            return true;
-          }
-
-          if(this.boardsWon[0] == this.boardsWon[4] && this.boardsWon[0] == this.boardsWon[8]){ //Left Diag
-            return true;
-          }
-
-          if(this.boardsWon[0] == this.boardsWon[1] && this.boardsWon[0] == this.boardsWon[2]){ // Top row
-            return true;
-          }
-        }
-
-        if(this.boardsWon[2] != 0){
-          if(this.boardsWon[2] == this.boardsWon[4] && this.boardsWon[2] == this.boardsWon[6]){ // Right diag
-            return true;
-          }
-
-          if(this.boardsWon[2] == this.boardsWon[5] && this.boardsWon[2] == this.boardsWon[8]){ // Right col
-            return true;
-          }
-        }
-
-        if(this.boardsWon[7] != 0){
-          if(this.boardsWon[7] == this.boardsWon[4] && this.boardsWon[7] == this.boardsWon[1]){ // Middle col
-            return true;
-          }
-
-          if(this.boardsWon[7] == this.boardsWon[6] && this.boardsWon[7] == this.boardsWon[8]){ // Bottom row
-            return true;
-          }
-        }
-
-        if(this.boardsWon[3] != 0 && this.boardsWon[3] == this.boardsWon[4] && this.boardsWon[3] == this.boardsWon[5]){ // Middle row
+        if(this.gameWon()){
           return true;
         }
-
         //Only a tie stops the game
         return this.gameTied();
       }
@@ -721,6 +686,92 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
         }
       }
       return true;
+    };
+
+    /*
+     * 
+     */
+    Game.prototype.gameWon = function(){
+      if(this.gameMode == 1){
+        if(this.board[0][0] != 0){
+          if(this.board[0][0] == this.board[1][0] && this.board[0][0] == this.board[2][0]){ // Left col
+            return true;
+          }
+
+          if(this.board[0][0] == this.board[1][1] && this.board[0][0] == this.board[2][2]){ //Left Diag
+            return true;
+          }
+
+          if(this.board[0][0] == this.board[0][1] && this.board[0][0] == this.board[0][2]){ // Top row
+            return true;
+          }
+        }
+
+        if(this.board[0][2] != 0){
+          if(this.board[0][2] == this.board[1][1] && this.board[0][2] == this.board[2][0]){ // Right diag
+            return true;
+          }
+
+          if(this.board[0][2] == this.board[1][2] && this.board[0][2] == this.board[2][2]){ // Right col=
+            return true;
+          }
+        }
+
+        if(this.board[2][1] != 0){
+          if(this.board[2][1] == this.board[1][1] && this.board[2][1] == this.board[0][1]){ // Middle col
+            return true;
+          }
+
+          if(this.board[2][1] == this.board[2][0] && this.board[2][1] == this.board[2][2]){ // Bottom row
+            return true;
+          }
+        }
+
+        if(this.board[1][0] != 0 && this.board[1][0] == this.board[1][1] && this.board[1][0] == this.board[1][2]){ // Middle row
+          return true;
+        }
+      }else if(this.gameMode == 2){
+        //Condition for a win
+        if(this.boardsWon[0] != 0){
+          if(this.boardsWon[0] == this.boardsWon[3] && this.boardsWon[0] == this.boardsWon[6]){ // Left col
+            return true;
+          }
+
+          if(this.boardsWon[0] == this.boardsWon[4] && this.boardsWon[0] == this.boardsWon[8]){ //Left Diag
+            return true;
+          }
+
+          if(this.boardsWon[0] == this.boardsWon[1] && this.boardsWon[0] == this.boardsWon[2]){ // Top row
+            return true;
+          }
+        }
+
+        if(this.boardsWon[2] != 0){
+          if(this.boardsWon[2] == this.boardsWon[4] && this.boardsWon[2] == this.boardsWon[6]){ // Right diag
+            return true;
+          }
+
+          if(this.boardsWon[2] == this.boardsWon[5] && this.boardsWon[2] == this.boardsWon[8]){ // Right col
+            return true;
+          }
+        }
+
+        if(this.boardsWon[7] != 0){
+          if(this.boardsWon[7] == this.boardsWon[4] && this.boardsWon[7] == this.boardsWon[1]){ // Middle col
+            return true;
+          }
+
+          if(this.boardsWon[7] == this.boardsWon[6] && this.boardsWon[7] == this.boardsWon[8]){ // Bottom row
+            return true;
+          }
+        }
+
+        if(this.boardsWon[3] != 0 && this.boardsWon[3] == this.boardsWon[4] && this.boardsWon[3] == this.boardsWon[5]){ // Middle row
+          return true;
+        }
+      }
+
+      return false;
     };
 
     /*
@@ -793,16 +844,16 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
 
         //Set text
         text.innerHTML = "Game Over";
-        if(this.gameTied()){
-          text.setAttribute("class", "tie");
-          text2.setAttribute("class", "tie");
-          text2.innerHTML = "Tie";
-          rect.setAttribute("class", "background-tie");
-        }else{
+        if(this.gameWon()){
           rect.setAttribute("class", "background-winner" + this.currentPlayer);
           text.setAttribute("class", "winner" + this.currentPlayer);
           text2.setAttribute("class", "winner" + this.currentPlayer);
           text2.innerHTML = "Winner: Player " + this.currentPlayer;
+        }else{ //Tie
+          text.setAttribute("class", "tie");
+          text2.setAttribute("class", "tie");
+          text2.innerHTML = "Tie";
+          rect.setAttribute("class", "background-tie");
         }
 
         boardSVG.appendChild(rect);
