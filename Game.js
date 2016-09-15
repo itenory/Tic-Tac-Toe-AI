@@ -122,6 +122,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
           var iX = parseInt(xPos/200);
           var iY = parseInt(yPos/200);
 
+          console.log(iX, iY);
           game.setPieceToPlayer(0, 0, iX, iY);
         }else if(game.gameMode == 2){
           var oX = parseInt(yPos/200);
@@ -131,7 +132,6 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
           var iX = parseInt(yPos/66.6) % 3;
           var iY = parseInt(xPos/66.6) % 3;
 
-          console.log(oX, oY, iX, iY);
           game.setPieceToPlayer(oX, oY, iX, iY);
         }
       };
@@ -227,8 +227,8 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       var boardVertices = [];
       var numOfSquares;
       if(this.gameMode == 1){
-        for(var j = 0; j < 3; j++){
-          for(var i = 0; i < 3; i++){
+        for(var i = 0; i < 3; i++){
+          for(var j = 0; j < 3; j++){
             if(this.board[i][j] == 0){
               var square = verticesSquare(-1 + (i*2/3),1 - (j*2/3) , 2/3, .5, .5, .5, .05);
               for(var k = 0; k < square.length; k++){
@@ -240,7 +240,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
                 boardVertices.push(square[k]);
               }
             }else{ // Blue
-              var square = verticesSquare(-1 + (i*2/3),1 - (j*2/3) , 2/3, 0, 1, 0, .1);
+              var square = verticesSquare(-1 + (i*2/3),1 - (j*2/3) , 2/3, 0, 0, 1, .1);
               for(var k = 0; k < square.length; k++){
                 boardVertices.push(square[k]);
               }
@@ -447,6 +447,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
      */
     Game.prototype.setPieceToPlayer = function(outerX, outerY, innerX, innerY){
       if(this.gameMode == 1){
+        console.log(this.board);
         //Check for valid move
         if(this.board[innerX][innerY] != 0){
           console.log("Invalid move.");
