@@ -279,7 +279,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       //Creating buffers
       var boardVertexBufferObject = this.gl.createBuffer();
       this.gl.bindBuffer(this.gl.ARRAY_BUFFER, boardVertexBufferObject);
-     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(boardVertices), this.gl.STATIC_DRAW);
+      this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(boardVertices), this.gl.STATIC_DRAW);
 
 
       var positionAttribLocation = this.gl.getAttribLocation(program, "vertPosition");
@@ -816,10 +816,10 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
      * Shows winner of the game or tied using SVG or WebGL
      * SVG draws a box over the game board
      * WebGL, draws a line through the winning position
+     * Adds a button on the bottom for restarting the game
      */
     Game.prototype.endScene = function(){
       if(this.gl){ // WebGL
-
       }else{ // SVG, just display a rect over the board that say who won
         var boardSVG = document.getElementById("gameboard");
         var svgns = "http://www.w3.org/2000/svg";
@@ -860,8 +860,15 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
         boardSVG.appendChild(rect);
         boardSVG.appendChild(text);
         boardSVG.appendChild(text2);
-
       }
+
+      var link = document.createElement("a");
+      var gameDiv = document.getElementById("game");
+
+      link.setAttribute("href", "index.html");
+      link.setAttribute("class", "restart-link");
+      link.innerHTML = "Restart Game!";
+      gameDiv.appendChild(link);
     };
   }
 }
