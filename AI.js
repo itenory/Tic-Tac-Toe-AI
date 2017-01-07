@@ -28,7 +28,11 @@ var AI = function(level, mode, player){
       this.possibleBoard = currentBoard;
 
       console.log("Finding AI's move.");
-      var nextMove = this.minmaxSearch(this.aiPlayer, 0, x, y);
+
+      // var nextMove = this.minmaxSearch(this.aiPlayer, 0, x, y);
+      var nextMove = this.minmaxSearchPruning(this.aiPlayer, 0, x, y, -10000000, 10000000);
+
+
       console.log("Move found: ");
       console.log(nextMove);
 
@@ -36,18 +40,15 @@ var AI = function(level, mode, player){
     };
 
     /*
-     * Min Max search for tic tac toe
+     * Min Max search for tic tac toe for all modes
+     *
      * player The current player whose moves are to be evaluated.
      * depth The depth of the search tree (Initially 0).
-     * lastMove The last move made on teh board
+     * lastMove The last move made on the board
+     * return Returns the best move as object {outerX: , outerY: , innerX: , innerY: } or {innerX: , innerY: } 
      */
     AI.prototype.minmaxSearch = function(player, depth, x, y){
-      /*
-        1. check depth
-        2. get possible moves
-        3. loop through moves
-        4. return
-       */
+      // Reached depth bound (max lenght of tree)
       if(depth == this.depthBound){
         return this.evaluation(depth);
       }
@@ -55,12 +56,14 @@ var AI = function(level, mode, player){
       var possibleMoves = this.getPossibleMoves(x, y);
       var bestMove;
       var bestScore;
+
+      //If there are no more moves, then return the evaluation
       if(possibleMoves.length == 0){      
         return this.evaluation(depth);
       }
 
       // Conduct search
-      if(player == this.aiPlayer){ // Max AI Player's move
+      if(player == this.aiPlayer){ // AI move (Max)
         bestScore = -1000000;
 
         for(var i = 0; i < possibleMoves.length; i++){
@@ -74,7 +77,7 @@ var AI = function(level, mode, player){
 
           this.setMove(possibleMoves[i], 0);
         }
-      }else{ // Min Opponent's move
+      }else{ // Opponent move (min)
         bestScore = 1000000;
 
         for(var j = 0; j < possibleMoves.length; j++){
@@ -89,6 +92,7 @@ var AI = function(level, mode, player){
         }
       }
 
+
       if(depth == 0){
         return bestMove;
       }else{
@@ -97,18 +101,87 @@ var AI = function(level, mode, player){
     };
 
     /*
-     * Min max search with aplha beta pruning.
+     * Min max search with alpha beta pruning for all modes.
+     *
      * player The current player whos' moves are to be evaluated.
      * depth The depth of the search tree. (Initially 0).
-     * lastMove The last move made on the board
-     * a Aplha
+     * x The x of the last move
+     * y The y of the last move
+     * a Alpha
      * b Beta
+     * return  Returns the best move as object {outerX: , outerY: , innerX: , innerY: } or {innerX: , innerY: }
      */
-    AI.prototype.minmaxSearchrchPruning = function(player, depth, lastMove, a, b){
+    AI.prototype.minmaxSearchPruning = function(player, depth, x, y, a, b){
+      // Reached depth bound (max lenght of tree)
+      if(depth == this.depthBound){
+        return this.evaluation(depth);
+      }
+
+      var possibleMoves = this.getPossibleMoves(x, y);
+      var bestMove; 
+      var bestScore;
+      var v;
+
+      //If there are no more moves, then return the evaluation
+      if(possibleMoves.length === 0){
+        return this.evaluation(depth);
+      }
+
+      if(player == this.aiPlayer){ // AI move (Max)
+        bestScore = -10000000;
+        v = -10000000;          
+
+        for(var i = 0; i < possibleMoves.length; i++){
+          this.setMove(possibleMoves[i], player);
+
+          var score = this.minmaxSearchPruning((player%2)+1, depth + 1, possibleMoves[i].innerX, possibleMoves[i].innerY, a, b);
+          v = Math.max(v,score);
+          a = Math.max(a,v);
+          if(score > bestScore){
+            bestScore = score;
+            bestMove = possibleMoves[i];
+          }
+
+          this.setMove(possibleMoves[i], 0);
+
+          if(b <= a){
+            break;
+          }
+        }    
+      }else{ //Opponent Move (Min)
+        bestScore = 10000000;
+        v = 10000000;
+
+        for(var i = 0; i < possibleMoves.length; i++){
+          this.setMove(possibleMoves[i], player);
+
+          var score = this.minmaxSearchPruning((player%2)+1, depth + 1, possibleMoves[i].innerX, possibleMoves[i].innerY, a, b);
+          v = Math.min(v,score);
+          a = Math.min(a,v);
+
+          if(score < bestScore){
+            bestScore = score;
+            bestMove = possibleMoves[i];
+          }
+
+          this.setMove(possibleMoves[i], 0);
+
+          if(b <= a){
+            break;
+          }
+        }
+      }
+
+      if(depth === 0){
+        return bestMove;
+      }else{
+        return bestScore;
+      }
     };
 
     /*
      * Sets the move for the player in possibleBoard, depending on the game type
+     *
      * move The move to make in form of {outerX*, outerY*, innerX, innerY}.
      * player Player to set move to.
      */
@@ -125,7 +198,7 @@ var AI = function(level, mode, player){
      *  Ultimate mode uses last move to determind where the player can go.
      * x The innerX of the last move. (Needed for ultimate mode) 
      * y The innerY of the last move. (Needed for ultimate mode)
-     * return Returns a array of object where each objects 
+     * return Returns an array of objects as the possible moves
      */
     AI.prototype.getPossibleMoves = function(x, y){
       //Check if game is over
@@ -174,7 +247,7 @@ var AI = function(level, mode, player){
     };
 
     /*
-     * Checks if single board is tied by looking for the array has a 0 (playable piece)
+     * Checks if single board is tied by checking if the array has a 0 (playable piece)
      * outerX outerX position of the board to check
      * outerY outerY position of the board to check
      * return Returns true if board is tied, false otherwise 
@@ -249,7 +322,7 @@ var AI = function(level, mode, player){
     AI.prototype.singleWonBy = function(outerX, outerY){
       if(this.possibleBoard[outerX][outerY][0][0] != 0){
           if(this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][1][0] && this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][2][0]){ // Left col
-            return this.possibleBoard[outerX][outerY][0][0] ;
+            return this.possibleBoard[outerX][outerY][0][0];
           }
 
           if(this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][1][1] && this.possibleBoard[outerX][outerY][0][0] == this.possibleBoard[outerX][outerY][2][2]){ //Left Diag
