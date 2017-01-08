@@ -268,7 +268,7 @@ var AI = function(level, mode, player){
      * Checks if a single board is won or tied
      * outerX The X of the board to check
      * outerY The Y of the board to check
-     * return Returns true if board is won, false otherwise.
+     * return Returns true if board is unplayable, false otherwise.
      */
     AI.prototype.singleUnplayable = function(outerX, outerY){
       if(this.possibleBoard[outerX][outerY][0][0] != 0){
@@ -317,7 +317,10 @@ var AI = function(level, mode, player){
     };
 
     /* ! Use for ultimate mode only !
-     * 
+     * Checks if a single board is won by any player
+     * outerX The outerX of the board to check
+     * outerY The outerY of the board to check
+     * return Returns the player that won the board if there is one, otherwise returns 0;
      */
     AI.prototype.singleWonBy = function(outerX, outerY){
       if(this.possibleBoard[outerX][outerY][0][0] != 0){
@@ -364,6 +367,14 @@ var AI = function(level, mode, player){
     /*
      * Evaluation function for min max search.
      *  Evaluation methods depend on game mode
+     *  Normal Mode: 
+     *    If board is won by AI, return 10 - depth
+     *    If board is won by Opponent return depth - 10;
+     *  Ultimate Mode (Simple):
+     *    If board is won by AI, return 100000 
+     *    If board is won by Opponent return - 100000
+     *    otherwise, retrun 10 * (# of AI won boards) - 10 * (# of Opp won boards).
+     * depth The current depth of the node in the tree
      * return Returns the evaluation score for the current possible board
      */
     AI.prototype.evaluation = function(depth){
@@ -384,8 +395,10 @@ var AI = function(level, mode, player){
 
         var score = 0;
         var boardWins = [0,0,0,0,0,0,0,0];
+
         for(var i = 0; i < 3; i++){
           for(var j = 0; j < 3; j++){
+
             //Check for board wins
             var winner = this.singleWonBy(i,j);
             if(winner == this.aiPlayer){
@@ -396,7 +409,7 @@ var AI = function(level, mode, player){
               score -= 10;
             }
 
-            //Check for board 
+           
           }
         }
 
@@ -405,8 +418,8 @@ var AI = function(level, mode, player){
     };
 
     /*
-     * Checks if the game is won by the player
-     *  Works for all modes
+     * Checks if the game is won by the player, Works with any mode
+     *  
      * player The player to check for a win
      * return Returns true if the game is won, false otherwise
      */
@@ -505,6 +518,7 @@ var AI = function(level, mode, player){
           return true;
         }
 
+        //All game boards are tied
         if(tieCounter == 9){
           return true;
         }
@@ -512,6 +526,5 @@ var AI = function(level, mode, player){
         return false;
       }
     };
-
   }
 };
