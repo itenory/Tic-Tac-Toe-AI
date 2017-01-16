@@ -2,54 +2,28 @@
 <html>
   <head>
     <title>Tic Tac Toe</title>
+    
     <script src="Game.js"></script>
     <script src="AI.js"></script>
     <script>
       function setUpGame(){
         //Get inputs
-        var mode = document.getElementsByName("mode");
-        var diff = document.getElementsByName("difficulty");
-        var first = document.getElementsByName("first");
-        var vsai1 = document.getElementsByName("vsai1");
-        var vsai2 = document.getElementsByName("vsai2");
-
-        for(var i = 0; i < 2; i++){
-          if(first[i].checked){
-            first = parseInt(first[i].value);
-            break;
-          }
-        }
-        for(var i = 0; i < 3; i++){
-          if(diff[i].checked){
-            diff = parseInt(diff[i].value);
-            break;
-          }
-        }
-        for(var i = 0; i < 2; i++){
-          if(mode[i].checked){
-            mode = parseInt(mode[i].value);
-            break;
-          }
-        }
-        for(var i = 0; i < 2; i++){
-          if(vsai1[i].checked){
-            vsai1 = Boolean(vsai1[i].value);
-            break;
-          }
-        }
-        for(var i = 0; i < 2; i++){
-          if(vsai2[i].checked){
-            vsai2 = Boolean(vsai2[i].value);
-            break;
-          }
-        }
+        var mode = parseInt(document.getElementById("mode").value);
+        var diff = parseInt(document.getElementById("difficulty").value);
+        var first = parseInt(document.getElementById("first").value);
+        var vsai1 = Boolean(document.getElementById("player1").value);
+        var vsai2 = Boolean(document.getElementById("player2").value);
 
         //Create game object
         var game = new Game(mode, diff, first, vsai1, vsai2);
 
-
         //Start game loop
         game.startGame();
+      }
+
+      function changeSettings(id, val, text){
+        document.getElementById(id).value = val;
+        document.getElementById("option-" + id).innerHTML = text;
       }
     </script>
 
@@ -61,33 +35,55 @@
     <div id="menu">
       
       <div class="group">
-        <span>What difficulty?</span>
-        <input type="radio" name="difficulty" value="1" checked />Easy
-        <input type="radio" name="difficulty" value="2"/> Normal
-        <input type="radio" name="difficulty" value="3"/> Hard
-      </div>
-      <div class="group">
-        <span>Game Mode</span>
-        <input type="radio" name="mode" value="1" checked/> Normal
-        <input type="radio" name="mode" value="2"/> Ultimate
-      </div>
-      <div class="group">
-        <span>Who goes first? </span>
-        <input type="radio" name="first" value="1" checked/>Player 1
-        <input type="radio" name="first" value="2" />Player 2 (AI or second human player)
-      </div>
-      <div class="group">
-        <span>Who is player 1?</span>
-        <input type="radio" name="vsai1" value="" checked/>Human
-        <input type="radio" name="vsai1" value="true"/>AI
-      </div>
-      <div class="group">
-        <span>Who is player 2?</span>
-        <input type="radio" name="vsai2" value="" />Human
-        <input type="radio" name="vsai2" value="true" checked/>AI
+        <label id="lbl-difficulty">Difficulty: <span id="option-difficulty">Easy</span><span class="arrow"></span> </label>
+        <div class="options">
+          <button class= "menubtn" onclick="changeSettings('difficulty', '1',this.innerHTML);">Easy</button>
+          <button class= "menubtn" onclick="changeSettings('difficulty', '2',this.innerHTML);">Normal</button>
+          <button class= "menubtn" onclick="changeSettings('difficulty', '3',this.innerHTML);">Hard</button>
+        </div>
+        <input id="difficulty" type="hidden" value="1"/>
       </div>
 
-      <button onclick="setUpGame()">Start Game</button>
+      <div class="group">
+        <label id="lbl-mode">Game Mode: <span id="option-mode">Normal</span></label>
+        <div class="options">
+          <button class= "menubtn" onclick="changeSettings('mode', '1',this.innerHTML);">Normal</button>
+          <button class= "menubtn" onclick="changeSettings('mode', '2',this.innerHTML);">Ultimate</button>
+        </div>
+        <input id="mode" type="hidden" value="1"/>
+      </div>
+
+      <div class="group">
+        <label id="lbl-first">First: <span id="option-first">Player 1</span> <span class="arrow"></span></label>
+
+        <div id="options">
+          <button class= "menubtn" onclick="changeSettings('first', '1', this.innerHTML);">Player 1</button>
+          <button class= "menubtn" onclick="changeSettings('first', '2', this.innerHTML);">Player 2</button>
+        </div>
+        <input id="first" type="hidden" value="1"/>
+      </div>
+
+      <div class="group">
+        <label id="lbl-player1">Player 1: <span id="option-player1">Human</span> <span class="arrow"></span></label>
+        <div class="options">
+          <button class= "menubtn" onclick="changeSettings('player1', '',this.innerHTML);">Human</button>
+          <button class= "menubtn" onclick="changeSettings('player1', 'true',this.innerHTML);">AI</button>
+        </div>
+
+        <input id="player1" type="hidden" value="">
+      </div>
+
+      <div class="group">
+        <label id="lbl-player2">Player 2: <span id="option-player2">AI</span> <span class="arrow"></span></label>
+        <div class="options">
+          <button class= "menubtn" onclick="changeSettings('player2', '', this.innerHTML);">Human</button>
+          <button class= "menubtn" onclick="changeSettings('player2', 'true', this.innerHTML);">AI</button>
+        </div>
+
+        <input id="player2" type="hidden" value="true">
+      </div>
+
+      <button class="menubtn" onclick="setUpGame()">Start Game</button>
     </div>
 
     <div id="game" >
