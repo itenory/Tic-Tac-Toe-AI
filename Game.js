@@ -1,11 +1,16 @@
 function Game(gameMode, aiLevel, first, vsai1, vsai2){
+  //Game Options
   this.gameMode = gameMode;
   this.currentPlayer = first;
   this.numOfMoves = 0;
   this.player1AI = vsai1;
   this.player2AI = vsai2;
+
+  //For WebGL Drawing
+  this.boardVertices = [];
+  this.boardColors = [];
   this.gameDone = false;
-  this.gl; // GL context if using webgl, null otherwise
+  
 
   //Create ai objects for player
   if(vsai1){
@@ -42,30 +47,30 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       }else{
         title.innerHTML = "Ultimate Tic Tac Toe"
       }
-      //If AI goes first, get and set their move. Redraw board
+      //If AI goes first, get and set their move.
       if(this.player1AI && this.currentPlayer == 1){
         var move = this.ai1.getMove(this.board, -1, -1);
-        if(!this.gl){
-          //Perform click for AI only for SVG version
-          if(this.gameMode == 1){
-            var elem = document.getElementById("00" + move.innerX + "" + move.innerY);
-          }else if(this.gameMode == 2){
-            var elem = document.getElementById("" + move.outerX + "" + move.outerY + "" + move.innerX + "" + move.innerY);
-          }
-          elem.setAttributeNS(null, 'class', 'player' + this.currentPlayer);
+      
+        //Perform click for AI 
+        if(this.gameMode == 1){
+          var elem = document.getElementById("00" + move.innerX + "" + move.innerY);
+        }else if(this.gameMode == 2){
+          var elem = document.getElementById("" + move.outerX + "" + move.outerY + "" + move.innerX + "" + move.innerY);
         }
+        elem.setAttributeNS(null, 'class', 'player' + this.currentPlayer);
+        
         this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY)
       }else if(this.player2AI && this.currentPlayer == 2){
         var move = this.ai2.getMove(this.board, -1, -1);
-         if(!this.gl){
-          //Perform click for AI only for SVG version
-          if(this.gameMode == 1){
-            var elem = document.getElementById("00" + move.innerX + "" + move.innerY);
-          }else if(this.gameMode == 2){
-            var elem = document.getElementById("" + move.outerX + "" + move.outerY + "" + move.innerX + "" + move.innerY);
-          }
-          elem.setAttributeNS(null, 'class', 'player' + this.currentPlayer);
+         
+        //Perform click for AI
+        if(this.gameMode == 1){
+          var elem = document.getElementById("00" + move.innerX + "" + move.innerY);
+        }else if(this.gameMode == 2){
+          var elem = document.getElementById("" + move.outerX + "" + move.outerY + "" + move.innerX + "" + move.innerY);
         }
+        elem.setAttributeNS(null, 'class', 'player' + this.currentPlayer);
+        
         this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY);
       }
     };
@@ -100,222 +105,9 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
     };
 
     /*
-     * Sets mouse events for the current game mode
-     */
-    Game.prototype.setMouse = function(){
-      var canvas = document.getElementById("gameboard");
-      var xPos = canvas.offsetLeft - canvas.scrollLeft + canvas.clientLeft;
-      var yPos = canvas.offsetTop - canvas.scrollTop + canvas.clientTop;
-
-      var mouseDown = function(game, event){
-        if(game.gameDone){
-          return;
-        }
-        var xPos = canvas.offsetLeft - canvas.scrollLeft + canvas.clientLeft;
-        var yPos = canvas.offsetTop - canvas.scrollTop + canvas.clientTop;
-
-        xPos = event.pageX - xPos;
-        yPos = event.pageY - yPos;
-
-        //Check if
-        if(game.gameMode == 1){
-          var iX = parseInt(xPos/200);
-          var iY = parseInt(yPos/200);
-
-          console.log(iX, iY);
-          game.setPieceToPlayer(0, 0, iX, iY);
-        }else if(game.gameMode == 2){
-          var oX = parseInt(yPos/200);
-          var oY = parseInt(xPos/200);
-
-
-          var iX = parseInt(yPos/66.6) % 3;
-          var iY = parseInt(xPos/66.6) % 3;
-
-          game.setPieceToPlayer(oX, oY, iX, iY);
-        }
-      };
-
-      canvas.addEventListener("mousedown",
-        function(game){
-          return function (){mouseDown(game, event);}
-        }(this),
-        false);
-    };
-
-    /*
-     * Draws the game board using WebGL 
-     */
-    Game.prototype.drawBoard = function(){
-      console.log("Drawing board");
-      var vertexShaderText =
-      [
-        'precision mediump float;',
-        '',
-        'attribute vec2 vertPosition;',
-        'attribute vec3 vertColor;',
-        'varying vec3 fragColor;',
-        '',
-        'void main()',
-        '{',
-        ' fragColor = vertColor;',
-        ' gl_Position = vec4(vertPosition, 0.0, 1.0);',
-        '}'
-      ].join('\n');
-      var fragmentShaderText =
-      [
-        'precision mediump float;',
-        '',
-        'varying vec3 fragColor;',
-        'void main()',
-        '{',
-        ' gl_FragColor = vec4(fragColor, 1.0);',
-        '}'
-      ].join('\n');
-
-      //Try first with webgl, if it doesn't work than use svgs
-      var canvas = document.getElementById("gameboard");
-      this.gl = canvas.getContext("experimental-webgl");
-      //this.gl = null; //For Debugging SVG Mode
-
-      if(!this.gl){
-        alert("ERROR This browser does not support WebGL, using an alternate method.");
-        this.drawBoardAlt();
-        return;
-      }
-
-      this.setMouse();
-
-      //Clear
-      this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
-      this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-
-      //Compile shader
-      var vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
-      var fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-
-      this.gl.shaderSource(vertexShader, vertexShaderText);
-      this.gl.shaderSource(fragmentShader, fragmentShaderText);
-
-      this.gl.compileShader(vertexShader);
-      this.gl.compileShader(fragmentShader);
-
-      //Create Program
-      var program = this.gl.createProgram();
-      this.gl.attachShader(program, vertexShader);
-      this.gl.attachShader(program, fragmentShader);
-      this.gl.linkProgram(program);
-
-
-      //Function for getting vertices for squares
-      var verticesSquare = function (topLeftX, topLeftY, length, r, g, b, buffer){
-        var vertices = [];
-
-        vertices.push(topLeftX + buffer, topLeftY - buffer, r, g, b); // Top left
-        vertices.push(topLeftX + buffer, (topLeftY - length) + buffer, r, g, b); // Bottom left
-        vertices.push(topLeftX + (length - buffer), (topLeftY - length) + buffer, r,g,b); // Bottom Right
-
-        vertices.push(topLeftX + buffer, topLeftY - buffer, r, g, b); // Top left
-        vertices.push(topLeftX + (length - buffer), (topLeftY - length) + buffer, r,g,b); // Bottom Right
-        vertices.push( topLeftX + (length - buffer), topLeftY - buffer, r,g,b); // Top Right
-
-        return vertices;
-      }
-
-
-      //Creating vertices for triangles
-      var boardVertices = [];
-      var numOfSquares;
-      if(this.gameMode == 1){
-        for(var i = 0; i < 3; i++){
-          for(var j = 0; j < 3; j++){
-            if(this.board[i][j] == 0){
-              var square = verticesSquare(-1 + (i*2/3),1 - (j*2/3) , 2/3, .5, .5, .5, .05);
-              for(var k = 0; k < square.length; k++){
-                boardVertices.push(square[k]);
-              }
-            }else if(this.board[i][j] == 1){ // Red
-              var square = verticesSquare(-1 + (i*2/3),1 - (j*2/3) , 2/3, 1, 0, 0, .1);
-              for(var k = 0; k < square.length; k++){
-                boardVertices.push(square[k]);
-              }
-            }else{ // Blue
-              var square = verticesSquare(-1 + (i*2/3),1 - (j*2/3) , 2/3, 0, 0, 1, .1);
-              for(var k = 0; k < square.length; k++){
-                boardVertices.push(square[k]);
-              }
-            }
-          }
-        }
-        numOfSquares = 9;
-      }else if(this.gameMode == 2){
-        for(var i = 0; i < 3; i++){
-          for(var j = 0; j < 3; j++){
-            for(var k = 0; k < 3; k++){
-              for(var l = 0; l < 3; l++){
-                if(this.board[i][j][k][l] == 0){ // Default
-                  var square = verticesSquare(-1 + (l * 2/9) + (j*2/3),1 - (k*2/9) -(i*2/3) , 2/9, .5, .5, .5, .05);
-                  for(var m = 0; m < square.length; m++){
-                    boardVertices.push(square[m]);
-                  }
-                }else if(this.board[i][j][k][l] == 1){// Player 1 (Red)
-                  var square = verticesSquare(-1 + (l * 2/9) + (j*2/3),1 - (k*2/9) -(i*2/3) , 2/9, 1, 0, 0, .05);
-                  for(var m = 0; m < square.length; m++){
-                    boardVertices.push(square[m]);
-                  }
-                }else{ // Player 2 (Blue)
-                  var square = verticesSquare(-1 + (l * 2/9) + (j*2/3),1 - (k*2/9) -(i*2/3) , 2/9, 0, 0, 1, .05);
-                  for(var m = 0; m < square.length; m++){
-                    boardVertices.push(square[m]);
-                  }
-                }
-              }
-            }
-          }
-        }
-        numOfSquares = 81;
-      }
-
-      //Creating buffers
-      var boardVertexBufferObject = this.gl.createBuffer();
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, boardVertexBufferObject);
-      this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(boardVertices), this.gl.STATIC_DRAW);
-
-
-      var positionAttribLocation = this.gl.getAttribLocation(program, "vertPosition");
-      var colorAttribLocation = this.gl.getAttribLocation(program, "vertColor");
-
-      this.gl.vertexAttribPointer(
-        positionAttribLocation,
-        2, // Number of elements per attribute;
-        this.gl.FLOAT,
-        this.gl.FALSE,
-        5 * Float32Array.BYTES_PER_ELEMENT,
-        0
-      );
-
-
-      this.gl.vertexAttribPointer(
-        colorAttribLocation,
-        3,
-        this.gl.FLOAT,
-        this.gl.FALSE,
-        5 * Float32Array.BYTES_PER_ELEMENT,
-        2 * Float32Array.BYTES_PER_ELEMENT
-      );
-
-      this.gl.enableVertexAttribArray(positionAttribLocation);
-      this.gl.enableVertexAttribArray(colorAttribLocation);
-
-      //Start
-      this.gl.useProgram(program);
-      this.gl.drawArrays(this.gl.TRIANGLES, 0, 3*(2*numOfSquares));
-    };
-
-    /*
      * Draws board using svg rather than webgl
      */
-    Game.prototype.drawBoardAlt = function(){
+    Game.prototype.drawBoard = function(){
       var boardSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       var divContainer = document.getElementById("game");
 
@@ -368,8 +160,6 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
 
       //Add the svg to the div, and remove the canvas tag
       divContainer.appendChild(boardSVG);
-      var canvas = document.getElementById("gameboard");
-      divContainer.removeChild(canvas);
     };
 
     /*
@@ -672,7 +462,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       return false;
     }
 
-    /* ! Ultimate mode only
+    /* ! ULTIMATE VERSION ONLY !
      *  Checks if a single board is tied by looking for at least 1 possible move
      * outerX The x position of the board
      * outerY The y position of the board
@@ -819,49 +609,48 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
      * Adds a button on the bottom for restarting the game
      */
     Game.prototype.endScene = function(){
-      if(this.gl){ // WebGL
-      }else{ // SVG, just display a rect over the board that say who won
-        var boardSVG = document.getElementById("gameboard");
-        var svgns = "http://www.w3.org/2000/svg";
-        var text = document.createElementNS(svgns, "text");
-        var text2 = document.createElementNS(svgns, "text");
-        var rect = document.createElementNS(svgns, "rect");
+      // SVG, just display a rect over the board that say who won
+      var boardSVG = document.getElementById("gameboard");
+      var svgns = "http://www.w3.org/2000/svg";
+      var text = document.createElementNS(svgns, "text");
+      var text2 = document.createElementNS(svgns, "text");
+      var rect = document.createElementNS(svgns, "rect");
 
-        //Position for background and text
-        rect.setAttribute("x", 15);
-        rect.setAttribute("y", 15);
-        rect.setAttribute("width", 570);
-        rect.setAttribute("height", 570);
+      //Position for background and text
+      rect.setAttribute("x", 15);
+      rect.setAttribute("y", 15);
+      rect.setAttribute("width", 570);
+      rect.setAttribute("height", 570);
 
-        text.setAttribute("x", 300);
-        text.setAttribute("y", 250);
-        text.setAttribute("font-size", 64);
-        text.setAttribute("text-anchor", "middle");
+      text.setAttribute("x", 300);
+      text.setAttribute("y", 250);
+      text.setAttribute("font-size", 64);
+      text.setAttribute("text-anchor", "middle");
 
-        text2.setAttribute("x", 300);
-        text2.setAttribute("y", 350);
-        text2.setAttribute("font-size", 64);
-        text2.setAttribute("text-anchor", "middle");
+      text2.setAttribute("x", 300);
+      text2.setAttribute("y", 350);
+      text2.setAttribute("font-size", 64);
+      text2.setAttribute("text-anchor", "middle");
 
-        //Set text
-        text.innerHTML = "Game Over";
-        if(this.gameWon()){
-          rect.setAttribute("class", "background-winner" + this.currentPlayer);
-          text.setAttribute("class", "winner" + this.currentPlayer);
-          text2.setAttribute("class", "winner" + this.currentPlayer);
-          text2.innerHTML = "Winner: Player " + this.currentPlayer;
-        }else{ //Tie
-          text.setAttribute("class", "tie");
-          text2.setAttribute("class", "tie");
-          text2.innerHTML = "Tie";
-          rect.setAttribute("class", "background-tie");
-        }
-
-        boardSVG.appendChild(rect);
-        boardSVG.appendChild(text);
-        boardSVG.appendChild(text2);
+      //Set text
+      text.innerHTML = "Game Over";
+      if(this.gameWon()){
+        rect.setAttribute("class", "background-winner" + this.currentPlayer);
+        text.setAttribute("class", "winner" + this.currentPlayer);
+        text2.setAttribute("class", "winner" + this.currentPlayer);
+        text2.innerHTML = "Winner: Player " + this.currentPlayer;
+      }else{ //Tie
+        text.setAttribute("class", "tie");
+        text2.setAttribute("class", "tie");
+        text2.innerHTML = "Tie";
+        rect.setAttribute("class", "background-tie");
       }
 
+      boardSVG.appendChild(rect);
+      boardSVG.appendChild(text);
+      boardSVG.appendChild(text2);
+
+      //Create link to play a new game
       var link = document.createElement("a");
       var gameDiv = document.getElementById("game");
 
