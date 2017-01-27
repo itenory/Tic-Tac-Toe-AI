@@ -15,7 +15,6 @@ var AI = function(level, mode, player){
   }
 
   if(typeof this.getMove != "function"){
-    console.log("Adding AI fucntions");
 
     /*
      * Gets the next move for the AI
@@ -29,8 +28,13 @@ var AI = function(level, mode, player){
 
       console.log("Finding AI's move.");
 
-      // var nextMove = this.minmaxSearch(this.aiPlayer, 0, x, y);
-      var nextMove = this.minmaxSearchPruning(this.aiPlayer, 0, x, y, -10000000, 10000000);
+      
+      if(this.aiLevel == 3){
+        var nextMove = this.minmaxSearchPruning(this.aiPlayer, 0, x, y, -10000000, 10000000);
+      }else{
+        var nextMove = this.minmaxSearch(this.aiPlayer, 0, x, y);
+      }
+      
 
 
       console.log("Move found: ");
@@ -362,8 +366,8 @@ var AI = function(level, mode, player){
       }
 
       return 0;
-     };
-
+    };
+    
     /*
      * Evaluation function for min max search.
      *  Evaluation methods depend on game mode
