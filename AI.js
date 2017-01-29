@@ -26,19 +26,24 @@ var AI = function(level, mode, player){
     AI.prototype.getMove = function(currentBoard, x, y){
       this.possibleBoard = currentBoard;
 
-      console.log("Finding AI's move.");
-
-      
-      if(this.aiLevel == 3){
+      if(this.aiLevel == 3){ // Use pruning
         var nextMove = this.minmaxSearchPruning(this.aiPlayer, 0, x, y, -10000000, 10000000);
       }else{
         var nextMove = this.minmaxSearch(this.aiPlayer, 0, x, y);
       }
-      
 
-
-      console.log("Move found: ");
-      console.log(nextMove);
+      //Check for any errors in with the search
+      if(nextMove == null){
+        //Handle error get the first possible move
+        var pm = this.getPossibleMoves(x,y);
+        if(pm.length == 0){
+          alert("No move can be made");
+          return nextMove;
+        }else{
+          nextMove = pm[0];
+          alert("There seems to be an error. Using any move");
+        }
+      }
 
       return nextMove;
     };
