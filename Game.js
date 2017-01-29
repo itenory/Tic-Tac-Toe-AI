@@ -175,7 +175,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
           piece.setAttributeNS(null, 'class', "player" + game.currentPlayer);
           game.setPieceToPlayer(parseInt(id.charAt(0)), parseInt(id.charAt(1)), parseInt(id.charAt(2)), parseInt(id.charAt(3)));
         }else{
-          console.log("Invalid move");
+          alert("Invalid Move");
         }
       };
 
@@ -231,16 +231,14 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
       if(this.gameMode == 1){
         //Check for valid move
         if(this.board[innerX][innerY] != 0){
-          console.log("Invalid move.");
+          alert("Invalid Move");
           return;
         }
 
         this.board[innerX][innerY] = this.currentPlayer;
 
-        if(this.gameOver()){ //Check if game is over
-          
+        if(this.gameOver()){ //Check if game is over   
           this.gameDone = true;
-          console.log("Game over. Player " + this.currentPlayer + " wins!");
           this.endScene();
           return;
         }
@@ -251,7 +249,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
         //If the next player is an AI, then get their move
         if(this.currentPlayer == 1 && this.player1AI){
           var move = this.ai1.getMove(this.board, null, null);
-          
+
           //Perform click for AI only for SVG version
           var elem = document.getElementById("00" + move.innerX + "" + move.innerY);
           elem.setAttributeNS(null, 'class', 'player' + this.currentPlayer);
@@ -274,8 +272,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
           //Reset piece
           var elem = document.getElementById(outerX + "" + outerY + "" + innerX + "" + innerY);
           elem.setAttributeNS(null, 'class', 'piece');
-
-          console.log("invalid move!");
+          alert("Invalid Move");
           return;
         }
 
@@ -290,7 +287,6 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
 
         if(this.gameOver()){ // Check if game is over
           this.gameDone = true;
-          console.log("Game Over. Player "+ this.currentPlayer + " wins!");
           this.endScene();
           return;
         }
@@ -307,10 +303,10 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
         this.currentPlayer = (this.currentPlayer % 2) + 1;
         this.numOfMoves++;
 
-        //If the next player is AI, then get their move, else set up next player's move.
+        //If the next player is AI, then get their move
         if(this.currentPlayer == 1 && this.player1AI){
           var move = this.ai1.getMove(this.board, innerX, innerY);
-          
+
           //Perform click for AI only for SVG version
           var elem = document.getElementById("" + move.outerX + "" + move.outerY + "" + move.innerX + "" + move.innerY);
           elem.setAttributeNS(null, 'class', 'player' + this.currentPlayer);
@@ -322,7 +318,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
           //Perform click for AI only for SVG version
           var elem = document.getElementById("" + move.outerX + "" + move.outerY + "" + move.innerX + "" + move.innerY);
           elem.setAttributeNS(null, 'class', 'player' + this.currentPlayer);
-
+          msgElem.innerHTMl = "test";
           this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY);
         }
       }
