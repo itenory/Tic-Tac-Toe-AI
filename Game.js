@@ -26,13 +26,8 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
      * Sets the backend copy of the board and draws the game board
      */
     Game.prototype.startGame = function(){
-
-      //Remove menu
-      var menu = document.getElementById("menu");
-      menu.parentNode.removeChild(menu);
-
+      
       this.setbackEnd();
-      this.drawBoard();
 
       var title = document.getElementById("header");
 
@@ -97,134 +92,6 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
     };
 
     /*
-     * Draws board using svg rather than webgl
-     */
-    Game.prototype.drawBoard = function(){
-      var boardSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      var divContainer = document.getElementById("game");
-
-      var h = 600; var w = 600;
-      boardSVG.setAttribute('id', 'gameboard');
-      boardSVG.setAttribute('height', h);
-      boardSVG.setAttribute('width', w);
-
-
-      //Functions for drawing board and drawing lines
-      var drawLines = function(x1, x2, y1, y2, color, width){
-        var svgns = "http://www.w3.org/2000/svg";
-        var line = document.createElementNS(svgns, "line");
-
-        line.setAttributeNS(null, "x1", x1);
-        line.setAttributeNS(null, "x2", x2);
-        line.setAttributeNS(null, "y1", y1);
-        line.setAttributeNS(null, "y2", y2);
-        line.setAttributeNS(null, "stroke", color);
-        line.setAttributeNS(null, "stroke-width", width);
-
-        return line;
-      };
-
-      //Check for game modes
-      if(this.gameMode == 1){
-        this.drawSingle(boardSVG, h, w, 0, 0, 0, "00");
-      }else if(this.gameMode == 2){
-        //Draw 9 singles boards
-        for(var i = 0; i < 3; i++){
-            for(var j = 0; j < 3; j++){
-              this.drawSingle(boardSVG, h/3, w/3, (w/3)*j, (h/3)*i, 10, i + "" + j);
-            }
-        }
-        //Draw the main divider lines
-        var verticeLine = drawLines(w/3, w/3, 0, h, "pink", 5);
-        boardSVG.appendChild(verticeLine);
-
-        verticeLine = drawLines((w/3)*2, (w/3)*2, 0, h, "pink", 5);
-        boardSVG.appendChild(verticeLine);
-
-        verticeLine = drawLines(0, w, h/3, h/3, "pink", 5);
-        boardSVG.appendChild(verticeLine);
-
-        verticeLine = drawLines(0, w, (h/3)*2, (h/3)*2, "pink", 5);
-        boardSVG.appendChild(verticeLine);
-
-
-      }
-
-      //Add the svg to the div, and remove the canvas tag
-      divContainer.appendChild(boardSVG);
-    };
-
-    /*
-     * Draws a single board using SVGs. Used for ultimate to draw multiple boards
-     *
-     */
-    Game.prototype.drawSingle = function(boardElem, height, width, x, y, spacing, id){
-      var svgns = "http://www.w3.org/2000/svg";
-      var rect = document.createElementNS(svgns, "rect");
-      rect.setAttributeNS(null, "width", width);
-      rect.setAttributeNS(null, "height", height);
-      rect.setAttributeNS(null, "x", x);
-      rect.setAttributeNS(null, "y", y);
-      rect.setAttributeNS(null, "id", id);
-      rect.setAttributeNS(null, "class", "single-board");
-      boardElem.appendChild(rect);
-
-      var mouseDown = function(game, piece){
-        var id = piece.getAttributeNS(null, 'id');
-        if(piece.getAttributeNS(null, 'class').includes('piece')){
-          piece.setAttributeNS(null, 'class', "player" + game.currentPlayer);
-          game.setPieceToPlayer(parseInt(id.charAt(0)), parseInt(id.charAt(1)), parseInt(id.charAt(2)), parseInt(id.charAt(3)));
-        }else{
-          alert("Invalid Move");
-        }
-      };
-
-      //Create inner rectangles and lines
-      for(var i = 0; i < 3; i++){
-        for(var j = 0; j < 3; j++){
-          var shape = document.createElementNS(svgns, "rect");
-          shape.setAttributeNS(null, "width", (width/3) - 30);
-          shape.setAttributeNS(null, "height", (height/3) - 30);
-          shape.setAttributeNS(null, "x", ((width / 3)* j) + 15 + x);
-          shape.setAttributeNS(null, "y", (height / 3) * i + 15 + y);
-          shape.setAttributeNS(null, "id", id + i + j);
-          shape.setAttributeNS(null, "class", "piece");
-          boardElem.appendChild(shape);
-
-          //Add event listener for clicks
-          shape.addEventListener('click', function(game, elem){
-            return function(event){
-              mouseDown(game, elem);
-            }
-          }(this, shape), false);
-
-          //Create lines
-          if(i === 0 && j > 0){
-            var line = document.createElementNS(svgns, "line");
-            line.setAttributeNS(null, "x1", ((width/3) * j) + x);
-            line.setAttributeNS(null, "x2", ((width/3) * j) + x);
-            line.setAttributeNS(null, "y1", y + spacing);
-            line.setAttributeNS(null, "y2", y + height - spacing);
-            line.setAttributeNS(null, "stroke", "pink");
-            line.setAttributeNS(null, "stroke-width", 2);
-
-            boardElem.appendChild(line);
-          }else if(i === 1 && j > 0){
-            var line = document.createElementNS(svgns, "line");
-            line.setAttributeNS(null, "x1", x + spacing);
-            line.setAttributeNS(null, "x2", x + width - spacing);
-            line.setAttributeNS(null, "y1", ((height/3) * j) + y);
-            line.setAttributeNS(null, "y2", ((height/3) * j) + y);
-            line.setAttributeNS(null, "stroke", "pink");
-            line.setAttributeNS(null, "stroke-width", 2);
-
-            boardElem.appendChild(line);
-          }
-        }
-      }
-    };
-
-    /*
      * Sets the piece of the board for the player
      */
     Game.prototype.setPieceToPlayer = function(outerX, outerY, innerX, innerY){
@@ -267,7 +134,7 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
         }
       }else if(this.gameMode == 2){
         //Check for invalid move
-        if(this.board[outerX][outerY][innerX][innerY] != 0 || this.boardsWon[(outerX*3) + outerY] != 0 || (this.lastMove && (outerX != this.lastMove.innerX || outerY != this.lastMove.innerY))){ // Check for valid move
+        if(this.board[outerX][outerY][innerX][innerY] != 0 || this.boardsWon[(outerX*3) + outerY] != 0 || (this.lastMove && (outerX != this.lastMove.innerX || outerY != this.lastMove.innerY))){
           
           //Reset piece
           var elem = document.getElementById(outerX + "" + outerY + "" + innerX + "" + innerY);
@@ -318,7 +185,6 @@ function Game(gameMode, aiLevel, first, vsai1, vsai2){
           //Perform click for AI only for SVG version
           var elem = document.getElementById("" + move.outerX + "" + move.outerY + "" + move.innerX + "" + move.innerY);
           elem.setAttributeNS(null, 'class', 'player' + this.currentPlayer);
-          msgElem.innerHTMl = "test";
           this.setPieceToPlayer(move.outerX, move.outerY, move.innerX, move.innerY);
         }
       }
