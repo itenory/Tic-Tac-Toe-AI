@@ -17,9 +17,9 @@
         //Create game object
         var game = new Game(mode, diff, first, vsai1, vsai2);
 
-        //Start game and draw board
-        game.startGame();
+        //Draw board and start game
         drawBoard(game);
+        game.startGame();
 
          //Remove menu
         var menu = document.getElementById("menu");
