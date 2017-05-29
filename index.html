@@ -2,20 +2,22 @@
 <html>
   <head>
     <title>Tic Tac Toe</title>
-    
+
     <script src="Game.js"></script>
     <script src="AI.js"></script>
+
     <script>
       function setUpGame(){
         //Get inputs
         var mode = parseInt(document.getElementById("mode").value);
         var diff = parseInt(document.getElementById("difficulty").value);
+        var diff2 = parseInt(document.getElementById("difficulty2").value);
         var first = parseInt(document.getElementById("first").value);
         var vsai1 = Boolean(document.getElementById("player1").value);
         var vsai2 = Boolean(document.getElementById("player2").value);
 
         //Create game object
-        var game = new Game(mode, diff, first, vsai1, vsai2);
+        var game = new Game(mode, diff, diff2, first, vsai1, vsai2);
 
         //Draw board and start game
         drawBoard(game);
@@ -29,6 +31,21 @@
       function changeSettings(id, val, text){
         document.getElementById(id).value = val;
         document.getElementById("option-" + id).innerHTML = text;
+
+        //Enable difficulty when ai players are enable
+        if(id.includes("player1")){
+          if(val.includes("true")){
+            document.getElementById("ai1diff").style.display = "block";
+          }else{
+            document.getElementById("ai1diff").style.display = "none";
+          }
+        }else if(id.includes("player2")){
+          if(val.includes("true")){
+            document.getElementById("ai2diff").style.display = "block";
+          }else{
+            document.getElementById("ai2diff").style.display = "none";
+          }
+        }
       }
 
       //Draws game board using SVG
@@ -157,17 +174,6 @@
   <body>
 
     <div id="menu">
-      
-      <div class="group">
-        <label id="lbl-difficulty">Difficulty: <span id="option-difficulty">Easy</span><span class="arrow"></span> </label>
-        <div class="options">
-          <button class= "menubtn" onclick="changeSettings('difficulty', '1',this.innerHTML);">Easy</button>
-          <button class= "menubtn" onclick="changeSettings('difficulty', '2',this.innerHTML);">Normal</button>
-          <button class= "menubtn" onclick="changeSettings('difficulty', '3',this.innerHTML);">Hard</button>
-        </div>
-        <input id="difficulty" type="hidden" value="1"/>
-      </div>
-
       <div class="group">
         <label id="lbl-mode">Game Mode: <span id="option-mode">Normal</span></label>
         <div class="options">
@@ -175,16 +181,6 @@
           <button class= "menubtn" onclick="changeSettings('mode', '2',this.innerHTML);">Ultimate</button>
         </div>
         <input id="mode" type="hidden" value="1"/>
-      </div>
-
-      <div class="group">
-        <label id="lbl-first">First: <span id="option-first">Player 1</span> <span class="arrow"></span></label>
-
-        <div id="options">
-          <button class= "menubtn" onclick="changeSettings('first', '1', this.innerHTML);">Player 1</button>
-          <button class= "menubtn" onclick="changeSettings('first', '2', this.innerHTML);">Player 2</button>
-        </div>
-        <input id="first" type="hidden" value="1"/>
       </div>
 
       <div class="group">
@@ -207,12 +203,44 @@
         <input id="player2" type="hidden" value="true">
       </div>
 
+
+      <div class="group">
+        <label id="lbl-first">First: <span id="option-first">Player 1</span> <span class="arrow"></span></label>
+
+        <div id="options">
+          <button class= "menubtn" onclick="changeSettings('first', '1', this.innerHTML);">Player 1</button>
+          <button class= "menubtn" onclick="changeSettings('first', '2', this.innerHTML);">Player 2</button>
+        </div>
+        <input id="first" type="hidden" value="1"/>
+      </div>
+
+      <div id="ai1diff" class="group" style="display: none;">
+        <label id="lbl-difficulty">Player 1 Difficulty: <span id="option-difficulty">Easy</span><span class="arrow"></span></label>
+        <div class="options">
+          <button class= "menubtn" onclick="changeSettings('difficulty', '1',this.innerHTML);">Easy</button>
+          <button class= "menubtn" onclick="changeSettings('difficulty', '2',this.innerHTML);">Normal</button>
+          <button class= "menubtn" onclick="changeSettings('difficulty', '3',this.innerHTML);">Hard</button>
+        </div>
+        <input id="difficulty" type="hidden" value="1"/>
+
+      </div>
+
+      <div id="ai2diff" class="group">
+        <label>Player 2 Difficulty: <span id="">Easy</span> </label>
+        <div class="options">
+          <button  class="menubtn" onclick="changeSettings('difficulty2', '1', this.innerHTML);">Easy</button>
+          <button class="menubtn" onclick="changeSettings('difficulty2', '2', this.innerHTML);">Normal</button>
+          <button class="menubtn" onclick="changeSettings('difficulty2', '3', this.innerHTML);">Hard</button>
+        </div>
+        <input id="difficulty2" type="hidden" value="1">
+      </div>
+
       <button class="menubtn" onclick="setUpGame()">Start Game</button>
     </div>
 
-    <div id="game" >
+    <div id="game">
       <div id="header"></div>
-      
+
     </div>
 
   </body>
