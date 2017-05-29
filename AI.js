@@ -1,3 +1,10 @@
+/*
+ * Class for Tic Tac Toe AI logic
+ *
+ * level  (int) Difficulty level for AI instance, 1 for Easy, 2 for Normal, 3 for Hard
+ * mode   (int) Game mode, 1 for Normal, 2 for Ultimate
+ * player (int) Player, 1 for Red to for
+ */
 var AI = function(level, mode, player){
   this.aiLevel = level;
   this.gameMode = mode;
@@ -17,16 +24,16 @@ var AI = function(level, mode, player){
   if(typeof this.getMove != "function"){
 
     /*
-     * Gets the next move for the AI
+     * Gets the next move for the AI, will only use pruning method for hardest difficulty
      * currentBoard The current board in the gameMode
      * x Last move innerX
      * y Last move innerY
-     * return Returns a object {innerX, innerY, outerX, outerY} for the move 
+     * return Returns a object {innerX, innerY, outerX, outerY} for the move
      */
     AI.prototype.getMove = function(currentBoard, x, y){
       this.possibleBoard = currentBoard;
 
-      if(this.aiLevel == 3){ // Use pruning
+      if(this.aiLevel == 3){ // Use pruning to improve timing
         var nextMove = this.minmaxSearchPruning(this.aiPlayer, 0, x, y, -10000000, 10000000);
       }else{
         var nextMove = this.minmaxSearch(this.aiPlayer, 0, x, y);
@@ -54,7 +61,7 @@ var AI = function(level, mode, player){
      * player The current player whose moves are to be evaluated.
      * depth The depth of the search tree (Initially 0).
      * lastMove The last move made on the board
-     * return Returns the best move as object {outerX: , outerY: , innerX: , innerY: } or {innerX: , innerY: } 
+     * return Returns the best move as object {outerX: , outerY: , innerX: , innerY: } or {innerX: , innerY: }
      */
     AI.prototype.minmaxSearch = function(player, depth, x, y){
       // Reached depth bound (max lenght of tree)
@@ -67,7 +74,7 @@ var AI = function(level, mode, player){
       var bestScore;
 
       //If there are no more moves, then return the evaluation
-      if(possibleMoves.length == 0){      
+      if(possibleMoves.length == 0){
         return this.evaluation(depth);
       }
 
@@ -127,7 +134,7 @@ var AI = function(level, mode, player){
       }
 
       var possibleMoves = this.getPossibleMoves(x, y);
-      var bestMove; 
+      var bestMove;
       var bestScore;
       var v;
 
@@ -138,7 +145,7 @@ var AI = function(level, mode, player){
 
       if(player == this.aiPlayer){ // AI move (Max)
         bestScore = -10000000;
-        v = -10000000;          
+        v = -10000000;
 
         for(var i = 0; i < possibleMoves.length; i++){
           this.setMove(possibleMoves[i], player);
@@ -156,7 +163,7 @@ var AI = function(level, mode, player){
           if(b <= a){
             break;
           }
-        }    
+        }
       }else{ //Opponent Move (Min)
         bestScore = 10000000;
         v = 10000000;
@@ -205,7 +212,7 @@ var AI = function(level, mode, player){
     /*
      * Gets all possible moves for either game mode.
      *  Ultimate mode uses last move to determind where the player can go.
-     * x The innerX of the last move. (Needed for ultimate mode) 
+     * x The innerX of the last move. (Needed for ultimate mode)
      * y The innerY of the last move. (Needed for ultimate mode)
      * return Returns an array of objects as the possible moves
      */
@@ -259,7 +266,7 @@ var AI = function(level, mode, player){
      * Checks if single board is tied by checking if the array has a 0 (playable piece)
      * outerX outerX position of the board to check
      * outerY outerY position of the board to check
-     * return Returns true if board is tied, false otherwise 
+     * return Returns true if board is tied, false otherwise
      */
     AI.prototype.boardTied = function(outerX, outerY){
       for(var i = 0; i < 3; i++){
@@ -311,7 +318,7 @@ var AI = function(level, mode, player){
 
         if(this.possibleBoard[outerX][outerY][2][1] == this.possibleBoard[outerX][outerY][2][0] && this.possibleBoard[outerX][outerY][2][1] == this.possibleBoard[outerX][outerY][2][2]){ // Bottom row
           return true;
-        } 
+        }
       }
 
       if(this.possibleBoard[outerX][outerY][1][0] != 0 && this.possibleBoard[outerX][outerY][1][0] == this.possibleBoard[outerX][outerY][1][1] && this.possibleBoard[outerX][outerY][1][0] == this.possibleBoard[outerX][outerY][1][2]){ // Middle row
@@ -363,7 +370,7 @@ var AI = function(level, mode, player){
 
         if(this.possibleBoard[outerX][outerY][2][1] == this.possibleBoard[outerX][outerY][2][0] && this.possibleBoard[outerX][outerY][2][1] == this.possibleBoard[outerX][outerY][2][2]){ // Bottom row
           return this.possibleBoard[outerX][outerY][2][1];
-        } 
+        }
       }
 
       if(this.possibleBoard[outerX][outerY][1][0] != 0 && this.possibleBoard[outerX][outerY][1][0] == this.possibleBoard[outerX][outerY][1][1] && this.possibleBoard[outerX][outerY][1][0] == this.possibleBoard[outerX][outerY][1][2]){ // Middle row
@@ -372,15 +379,15 @@ var AI = function(level, mode, player){
 
       return 0;
     };
-    
+
     /*
      * Evaluation function for min max search.
      *  Evaluation methods depend on game mode
-     *  Normal Mode: 
+     *  Normal Mode:
      *    If board is won by AI, return 10 - depth
      *    If board is won by Opponent return depth - 10;
      *  Ultimate Mode (Simple):
-     *    If board is won by AI, return 100000 
+     *    If board is won by AI, return 100000
      *    If board is won by Opponent return - 100000
      *    otherwise, retrun 10 * (# of AI won boards) - 10 * (# of Opp won boards).
      * depth The current depth of the node in the tree
@@ -418,7 +425,7 @@ var AI = function(level, mode, player){
               score -= 10;
             }
 
-           
+
           }
         }
 
@@ -428,7 +435,7 @@ var AI = function(level, mode, player){
 
     /*
      * Checks if the game is won by the player, Works with any mode
-     *  
+     *
      * player The player to check for a win
      * return Returns true if the game is won, false otherwise
      */
@@ -502,7 +509,7 @@ var AI = function(level, mode, player){
         if(boardWins[1] == player && boardWins[4] == player && boardWins[7] == player){ // Mid col
           return true;
         }
-        
+
         if(boardWins[2] == player && boardWins[5] == player && boardWins[8] == player){ // Right col
           return true;
         }
@@ -510,19 +517,19 @@ var AI = function(level, mode, player){
         if(boardWins[0] == player && boardWins[1] == player && boardWins[2] == player){ // Top row
           return true;
         }
-        
+
         if(boardWins[3] == player && boardWins[4] == player && boardWins[5] == player){ // Mid row
           return true;
         }
-        
+
         if(boardWins[6] == player && boardWins[7] == player && boardWins[8] == player){ // Bot row
           return true;
         }
-        
+
         if(boardWins[0] == player && boardWins[4] == player && boardWins[8] == player){ // Left Diag
           return true;
         }
-        
+
         if(boardWins[2] == player && boardWins[4] == player && boardWins[6] == player){ // Right Diag
           return true;
         }
